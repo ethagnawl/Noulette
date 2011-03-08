@@ -3,17 +3,29 @@
 <head>
 	<title>Noulette</title>
 	<meta charset="UTF-8">
+<?/*
+    <link rel="stylesheet" type="text/css" href="./pub/css/yui/reset-min.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="./pub/css/yui/base-min.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="./pub/css/yui/fonts-min.css" media="all" />
+    <link rel="stylesheet" type="text/css" href="./pub/css/yui/grids-min.css" media="all" />
+*/?>
     <link rel="stylesheet" type="text/css" href="./noulette.css" media="all" />
     <script src='./head.js'></script>
 </head>
-<body>
+<body class='yui3-g'>
     <hi>noulette</hi>
     <div id="flash"></div>
     <button id="spin">spin!</button>
-    <ul id="results">
-	    <li>Results</li>
-    </ul>
+    <div class="yui3-u-1">
+        <ul id="chips" class='yui3-u-1-2'>
+	        <li>Stacks</li>
+        </ul>
+        <ul id="results" class='yui3-u-1-2'>
+	        <li>Results</li>
+        </ul>
+    </div>
     <div id='layout'>
+        <div id="wheel"></div>
         <table id='main_table'>
             <tr>
 	            <td id='0' class='number'>0</td>

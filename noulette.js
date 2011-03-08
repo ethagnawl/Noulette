@@ -208,13 +208,27 @@
         debit: function (chips) {
             var debit_amount = chips || 1;
             this.chip_count -= debit_amount;
+        },
+        update_chip_count: function () {
+            document.getElementById('chip_count').innerHTML = chips.chip_count;
         }
     };
+
+    (function () {
+        var chip_count = document.createElement('li');
+        chip_count.id = 'chip_count';        
+        chip_count.innerHTML = chips.chip_count;
+        document.getElementById('chips').appendChild(chip_count);
+    }());
 
     document.getElementById('spin').onclick = function () {
         clear.flash();
         $('.result').removeClass('result');
         if ($('#layout').find('.chip').length) {
+            $('#wheel').addClass('spin');
+            setTimeout(function () {
+                $('#wheel').removeClass('spin');
+            }, 2000);
             var result = spin()
                 ,   li_result = document.createElement('li')
                 ,   bets = []
@@ -282,6 +296,8 @@
 
             $('#' + result.number + ', #' + result.parity + ', #' + result.color + ', #' + which_half + ', #' + which_third + ', #' + column).addClass('result');
 
+            chips.update_chip_count();
+
             setTimeout(function () {
                 clear.results();
             }, 4000);
@@ -294,9 +310,11 @@ alert('will someone please place a bet?!');
     $('#layout').delegate('td', 'click', function () {
         if ($(this).hasClass('chip')) {
             chips.credit();
+            chips.update_chip_count();
             $(this).removeClass('chip');
         } else if (chips.chip_count) {
             chips.debit();                
+            chips.update_chip_count();
             $(this).addClass('chip');
         } else {
 alert('Please take a left at the Native American Motif behind the table and purchase some additional chips.');        

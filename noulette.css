@@ -1,5 +1,24 @@
 body { margin:0 auto; width:1024px; }
-#layout { background-color:#5aa064; }
+#layout { background-color:#5aa064; position:relative; }
+#wheel {
+    background:url(./wheel.png) no-repeat 0 0 transparent;
+    -webkit-transition: all 2s ease-in-out;
+    -moz-transition: all 2s ease-in-out;
+    -o-transition: all 2s ease-in-out;
+    -webkit-background-size: 100px;
+    -moz-background-size: 100px;
+    -o-background-size: 100px;
+    height:100px;
+    width:100px;
+    position:absolute;
+    left:0;
+    top:0;
+}
+#wheel.spin {
+    -webkit-transform: rotate(720deg) scale(1);
+    -moz-transform: rotate(720deg) scale(1);
+    -o-transform: rotate(720deg) scale(1)
+}
 table { margin:0 auto; }
 #main_table {
     moz-transform: rotate(-90deg);
