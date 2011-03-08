@@ -1,0 +1,16 @@
+body { margin:0 auto; width:1024px; }
+#layout { background-color:#5aa064; }
+table { margin:0 auto; }
+#main_table {
+    moz-transform: rotate(-90deg);
+    -o-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    transform: rotate(-90deg);  
+}
+td { border:2px solid #fff; color:#fff; cursor:pointer; position:relative; text-align:center; }
+.green { background-color:green; }
+.black { background-color:black; }
+.red { background-color:red; }
+.chip { border-color:black; }
+.result { border-color:orange; }
