@@ -18,7 +18,7 @@
     <button id="spin">spin!</button>
     <div class="yui3-u-1">
         <ul id="chips" class='yui3-u-1-2'>
-	        <li>Stacks</li>
+	        <li>Chip Stack</li>
         </ul>
         <ul id="results" class='yui3-u-1-2'>
 	        <li>Results</li>
@@ -116,7 +116,8 @@
         </table>
     </div>
     <script>
-    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js', './noulette.js');
+        head.js('./jquery.js', './noulette.js');
+//    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js', './noulette.js');
     </script>	
 </body>
 </html>

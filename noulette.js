@@ -227,80 +227,80 @@
         if ($('#layout').find('.chip').length) {
             $('#wheel').addClass('spin');
             setTimeout(function () {
-                $('#wheel').removeClass('spin');
+                var result = spin()
+                    ,   li_result = document.createElement('li')
+                    ,   bets = []
+                    ,   column = column_1.indexOf(Number(result.number)) !== -1 ? 'column_1' : column_2.indexOf(Number(result.number))!== -1 ? 'column_2' : 'column_3'
+                    ,   which_third = Number(result['number']) < 13 ? '1_12' : Number(result['number']) < 25 ? '13_24' : '25_36' 
+                    ,   which_half = Number(result['number']) < 19 ? '1_18' : '19_36'
+                    ,   winner = false
+                    ,   bet
+                    ,   l
+                    ,   $el
+                ;
+                li_result.innerHTML = result.number + ' ' + result.color + ' ' + result.parity;
+                document.getElementById('results').appendChild(li_result);
+
+                $('#layout').find('.chip').each(function () {
+                    bets[bets.length] = this.id;
+                });
+
+                for (bet = 0, l = bets.length; bet < l; bet += 1) {
+                    $el = $(document.getElementById(bets[bet]));
+                    if ($el.hasClass('color')) {
+                        if (bets[bet] === result['color']) {
+                            winner = true;
+                            console.log(chips.chip_count);
+                            console.log('you win! - color');
+                            chips.credit(1);
+                            console.log(chips.chip_count);
+                        }
+                    }
+                    if ($el.hasClass('half')) {
+                        if (bets[bet] === which_half) {
+                            winner = true;
+                            console.log('you win! - half');                        
+                            chips.credit(1);
+                        }
+                    }
+                    if ($el.hasClass('third')) {
+                        if (bets[bet] === which_third) {
+                            winner = true;
+                            console.log('you win! - third');                        
+                            chips.credit(3);
+                        }
+                    }                
+                    if (parity_test(bets[bet])) {
+                        if (bets[bet] === result['parity']) {
+                            winner = true;
+                            console.log('you win! - parity');
+                            chips.credit(2);
+                        }
+                    }
+                    if (bets[bet] === result['number']) {
+                        winner = true;
+                        console.log('you win! - number');
+                        console.log(chips.chip_count);
+                        chips.credit(35);
+                        console.log(chips.chip_count);
+                    }
+                }
+        
+                if (winner) {
+                    flash();
+                }
+
+                clear.bets();            
+
+                $('#' + result.number + ', #' + result.parity + ', #' + result.color + ', #' + which_half + ', #' + which_third + ', #' + column).addClass('result');
+
+                chips.update_chip_count();
+
+                setTimeout(function () {
+                    $('#wheel').removeClass('spin');
+                    clear.results();
+                }, 4000);
             }, 2000);
-            var result = spin()
-                ,   li_result = document.createElement('li')
-                ,   bets = []
-                ,   column = column_1.indexOf(Number(result.number)) !== -1 ? 'column_1' : column_2.indexOf(Number(result.number))!== -1 ? 'column_2' : 'column_3'
-                ,   which_third = Number(result['number']) < 13 ? '1_12' : Number(result['number']) < 25 ? '13_24' : '25_36' 
-                ,   which_half = Number(result['number']) < 19 ? '1_18' : '19_36'
-                ,   winner = false
-                ,   bet
-                ,   l
-                ,   $el
-            ;
-            li_result.innerHTML = result.number + ' ' + result.color + ' ' + result.parity;
-            document.getElementById('results').appendChild(li_result);
-
-            $('#layout').find('.chip').each(function () {
-                bets[bets.length] = this.id;
-            });
-
-            for (bet = 0, l = bets.length; bet < l; bet += 1) {
-                $el = $(document.getElementById(bets[bet]));
-                if ($el.hasClass('color')) {
-                    if (bets[bet] === result['color']) {
-                        winner = true;
-                        console.log(chips.chip_count);
-                        console.log('you win! - color');
-                        chips.credit(1);
-                        console.log(chips.chip_count);
-                    }
-                }
-                if ($el.hasClass('half')) {
-                    if (bets[bet] === which_half) {
-                        winner = true;
-                        console.log('you win! - half');                        
-                        chips.credit(1);
-                    }
-                }
-                if ($el.hasClass('third')) {
-                    if (bets[bet] === which_third) {
-                        winner = true;
-                        console.log('you win! - third');                        
-                        chips.credit(3);
-                    }
-                }                
-                if (parity_test(bets[bet])) {
-                    if (bets[bet] === result['parity']) {
-                        winner = true;
-                        console.log('you win! - parity');
-                        chips.credit(2);
-                    }
-                }
-                if (bets[bet] === result['number']) {
-                    winner = true;
-                    console.log('you win! - number');
-                    console.log(chips.chip_count);
-                    chips.credit(35);
-                    console.log(chips.chip_count);
-                }
-            }
-    
-            if (winner) {
-                flash();
-            }
-
-            clear.bets();            
-
-            $('#' + result.number + ', #' + result.parity + ', #' + result.color + ', #' + which_half + ', #' + which_third + ', #' + column).addClass('result');
-
-            chips.update_chip_count();
-
-            setTimeout(function () {
-                clear.results();
-            }, 4000);
                     
         } else {
 alert('will someone please place a bet?!');
