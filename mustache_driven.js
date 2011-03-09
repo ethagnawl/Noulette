@@ -143,9 +143,16 @@ http.createServer(function (req, res) {
     req.addListener('end', function () {
     if (request_path.indexOf('/pub') !== -1) {
 //        file.serve(req, res)
-        res.writeHead(200, {'Content-Type': 'text/css'});
-        res.write(fs.readFileSync('/var/www/roulette/' + request_path, 'utf8')); // <--- add this line
-        res.end();
+        if (request_path.indexOf('/css') !== -1) {
+            res.writeHead(200, {'Content-Type': 'text/css'});
+            res.write(fs.readFileSync('/var/www/roulette/' + request_path, 'utf8')); // <--- add this line
+            res.end();
+        }
+        if (request_path.indexOf('/js') !== -1) {
+            res.writeHead(200, {'Content-Type': 'text/javascript'});
+            res.write(fs.readFileSync('/var/www/roulette/' + request_path, 'utf8')); // <--- add this line
+            res.end();
+        }
     }
   });
     if (request_path === '/') {
