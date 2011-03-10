@@ -6,9 +6,10 @@ var html_template = "\
     <link rel='stylesheet' type='text/css' href='/pub/css/noulette.css' media='all' />\
     <script src='/pub/js/head.js'></script>\
 </head>\
-<body>\
+<body class='hide'>\
     <h1>noulette</h1>\
     <div id='flash'></div>\
+    <ul id='players'></ul>\
     <button id='buy_more_chips'>buy more chips</button>\
     <button id='spin'>spin!</button>\
     <ul id='chips'>\
@@ -109,7 +110,7 @@ var html_template = "\
         </table>\
     </div>\
     <script>\
-    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js', '/pub/js/noulette.js');\
+    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js', 'http://cdn.socket.io/stable/socket.io.js', '/pub/js/noulette.js');\
     </script>\
 </body>\
 </html>\
@@ -121,48 +122,51 @@ var sys = require('sys')
     ,   http = require('http')
     ,   querystring = require('querystring')
     ,   static = require('node-static')
+    ,   app = require('express').createServer()
+    ,   socket = require('socket.io').listen(app)
     ,   file = new(static.Server)('./pub')
     ,   Mustache = require('./mustache')
     ,   view = {
         title: "Noulette"
     }
+    ,   players = {}
 ;
 
+function update_player_count() {
 
-function indexAction(req) {
-	return Mustache.to_html(html_template, view);
-};
+}
 
-//Very basic routing
-var router = {
-    "/" : indexAction
-};
+function clientDisconnect(client) {
+    players -= 1;
+    update_player_count();
+}
 
-http.createServer(function (req, res) {
-    var request_path = Url.parse(req.url).pathname;
-    req.addListener('end', function () {
-    if (request_path.indexOf('/pub') !== -1) {
-//        file.serve(req, res)
-        if (request_path.indexOf('/css') !== -1) {
-            res.writeHead(200, {'Content-Type': 'text/css'});
-            res.write(fs.readFileSync('/var/www/roulette/' + request_path, 'utf8')); // <--- add this line
-            res.end();
-        }
-        if (request_path.indexOf('/js') !== -1) {
-            res.writeHead(200, {'Content-Type': 'text/javascript'});
-            res.write(fs.readFileSync('/var/www/roulette/' + request_path, 'utf8')); // <--- add this line
-            res.end();
-        }
+socket.on('connection', function (client) { 
+//    players += 1;
+    if (players.length) {
+//        client.broadcast(players);
     }
-  });
-    if (request_path === '/') {
-        res.writeHead(200, {'Content-Type': 'text/html'});
-        var html = indexAction(req);
-        res.end(html);
-    } else if (request_path.indexOf('/pub') !== -1) {
-console.log('trying to serve up: ' + request_path);
-//        res.end(file.serve(req, res));
-    } else {
-        res.end('sorry');
-    } 
-}).listen(8000);
+    client.on('disconnect', function () {
+        client.broadcast({
+//            remove: players
+        });
+        clientDisconnect(client);
+        console.log('a player has disconnected');
+    }).on('message', function (msg) {
+        players[msg] = msg;
+        console.log(msg);
+        socket.broadcast(players);
+    });
+});
+
+app.get('/*.(js|css)', function(req, res) {
+console.log(req.url);
+    res.sendfile("/var/www/roulette" + req.url);
+});
+
+app.get('/', function (req, res) {
+    res.writeHead(200, {'Content-Type': 'text/html'});
+    res.end(Mustache.to_html(html_template, view));
+});
+
+app.listen(8000);

@@ -317,5 +317,33 @@ alert('will someone please place a bet?!');
         } else {
 alert('Please take a left at the Native American Motif behind the table and purchase some additional chips.');        
         }
-    });    
+    });
+    
+    var socket = new io.Socket(null, {port: 8000});
+
+    socket.connect().on('message', function (msg) {
+console.log(msg);
+        var i, l, li, list = document.createDocumentFragment();
+        for (player in msg) {
+            if (msg.hasOwnProperty(player)) {
+                li = document.createElement('li');
+                li.id = 'player_' + msg[player];
+                li.innerHTML = msg[player];
+                list.appendChild(li);
+            }
+        }
+        document.getElementById('players').appendChild(list);
+    });
+
+//    document.getElementById('send_message').onclick = function () {
+//        socket.send('some data');
+//    };    
+
+    var user_name = prompt('hey there! what\'s your name?');
+    if (user_name) {
+        $('body').removeClass('hide');
+        socket.send(user_name);        
+//        document.getElementsByTagName('body')[0].class = '';
+    }
+        
 }());
