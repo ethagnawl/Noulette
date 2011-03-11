@@ -5,7 +5,7 @@ body { margin:0 auto; width:1024px; }
 
 #layout { background-color:#5aa064; position:relative; }
 #wheel {
-    background:url(../img/wheel.png) no-repeat 0 0 transparent;
+    background:url(/pub/img/wheel.png) no-repeat 0 0 transparent;
     -webkit-background-size: 100px;
     -moz-background-size: 100px;
     -o-background-size: 100px;
