@@ -8,7 +8,7 @@ var html_template = "\
 </head>\
 <body class='hide'>\
     <h1>noulette</h1>\
-    <div id='column_left' class='fl-left'>\
+    <div id='column_left' class='fl-left fifty'>\
         <div id='flash'></div>\
         <ul id='players'></ul>\
         <button id='buy_more_chips'>buy more chips</button>\
@@ -19,13 +19,13 @@ var html_template = "\
             <li>Results</li>\
         </ul>\
     </div>\
-    <div id='column_right' class='fl-left'>\
+    <div id='column_right' class='fl-left fifty'>\
         <div id='layout'>\
             <div id='wheel'></div>\
             <table id='main_table'>\
                 <tr>\
-	                <td id='0' class='number'>0</td>\
-	                <td id='00' class='number'>00</td>\
+	                <td id='0' class='number yellow'>0</td>\
+	                <td id='00' class='number yellow'>00</td>\
                 </tr>\
                 <tr>\
 	                <td id='1' class='red number'>1</td>\
@@ -93,21 +93,21 @@ var html_template = "\
 	                <td id='column_3'>2-1</td>\
                 </tr>\
             </table>\
-            <table>\
+            <table id='three_wide'>\
 	            <tr>\
-	                <td id='1_12' class='third'>1st 12</td>\
-                    <td id='13_24' class='third'>2nd 12</td>\
-                    <td id='25_36' class='third'>3rd 12</td>\
+	                <td id='1_12' class='third yellow'>1st 12</td>\
+                    <td id='13_24' class='third yellow'>2nd 12</td>\
+                    <td id='25_36' class='third yellow'>3rd 12</td>\
 	            </tr>\
             </table>\
-            <table>\
+            <table id='six_wide'>\
 	            <tr>\
-                    <td id='1_18' class='half'>1-18</td>\
-                    <td class='parity' id='even'>Even</td>\
+                    <td id='1_18' class='half yellow'>1-18</td>\
+                    <td id='even class='parity yellow''>Even</td>\
                     <td id='red' class='red color'>Red</td>\
                     <td id='black' class='black color'>Black</td>\
-                    <td class='parity' id='odd'>Odd</td>\
-                    <td id='19_36' class='half'>19-36</td>\
+                    <td id='odd' class='parity yellow'>Odd</td>\
+                    <td id='19_36' class='half yellow'>19-36</td>\
 	            </tr>\
             </table>\
         </div>\
@@ -172,6 +172,7 @@ setInterval(function () {
 console.log(results);    
     socket.broadcast({
         spin: results
+        //  
     });
 }, 10000);
 
@@ -189,17 +190,26 @@ function update_players_list() {
 }
 
 socket.on('connection', function (client) {
+    socket.broadcast({
+        client_id: client.sessionId
+    });
     client.on('disconnect', function () {
         vithout(players_arr, players[client.sessionId]['user_name']);
         players[client.sessionId]['active'] = false;
         update_players_list();
     }).on('message', function (msg) {
+        if (msg.bet) {
+            players[client.sessionId]['bets'][players[client.sessionId]['bets'].length] = msg.bet;  // holy shit, make this a var
+console.log(players[client.sessionId]);
+        }
         if (msg.user_name) {
             players_arr[players_arr.length] = msg.user_name;    // gheeeett0
             players[client.sessionId] = {
+                client_id: client.sessionId,
                 user_name: msg.user_name,
                 active: true,
-                chips: 5
+                chips: 5,
+                bets: []
             };
             update_players_list();
         }
@@ -214,5 +224,3 @@ app.get('/*.(js|css|png)', function(req, res) {
 });
 
 app.listen(8000);
-
-

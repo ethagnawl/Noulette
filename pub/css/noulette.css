@@ -2,6 +2,8 @@ body { margin:0 auto; width:1024px; }
 
 .hide { display:none; }
 .show { display:block; }
+.fl-left { float:left; }
+.fifty { width:50%; }
 
 #layout { background-color:#5aa064; position:relative; }
 #wheel {
@@ -31,7 +33,10 @@ table { margin:0 auto; }
     -ms-transform: rotate(-90deg);
     transform: rotate(-90deg);  
 }
+#three_wide { left:181px; position:absolute; top:238px; }
+#six_wide { left:136px; position:absolute; top:265px; }
 td { border:2px solid #fff; color:#fff; cursor:pointer; position:relative; text-align:center; }
+.yellow { color:yellow; }
 .green { background-color:green; }
 .black { background-color:black; }
 .red { background-color:red; }

@@ -243,7 +243,9 @@
                 "parity": "even" 
             } 
         }
-    };
+    }
+    ,   user = {}
+    ;
 
     var tests = {
         // TODO: add "00" tests and move server-side
@@ -315,18 +317,29 @@
     var socket = new io.Socket(null, {port: 8000});
 
     $('#layout').delegate('td', 'click', function () {
+        var key = this.id
+            ,   val = 1
+            ,   bet = {}
+        ;
+        bet[key] = val;
         if ($(this).hasClass('chip')) {
             chips.credit();
             $(this).removeClass('chip');
         } else if (chips.chip_count) {
             chips.debit();                
             $(this).addClass('chip');
+            socket.send({
+                bet: bet
+            });        
         } else {
-alert('Please take a left at the Native American Motif behind the table and purchase some additional chips.');        
+alert('Please purchase additional chips.');        
         }
     });
 
     socket.connect().on('message', function (msg) {
+        if (msg.client_id) {
+            user.client_id = msg.client_id;
+        }
         if (msg.players_arr) {
             document.getElementById('players').innerHTML = msg.players_arr;
         }
@@ -400,13 +413,23 @@ alert('Please take a left at the Native American Motif behind the table and purc
             }, 2000);
         }
     });
+    
+//    $('#layout').delegate('td', 'click', function () {
+//        if ($(this).hasClass('chip')) {
+//            chips.credit();
+//            $(this).removeClass('chip');
+//        } else if (chips.chip_count) {
+//            chips.debit();                
+//            $(this).addClass('chip');
+//            
+//        } else {
+//            alert('Please take a left at the Native American Motif behind the table and purchase some additional chips.');        
+//        }
+//    });        
 
     var user_name = prompt('hey there! what\'s your name?');
     if (user_name) {
-        var user = {
-            user_name: user_name 
-        };
-console.log(user);
+        user.user_name = user_name;
         socket.send(user);        
         chips.owner = user_name;
         document.getElementsByTagName('body')[0].className = '';
