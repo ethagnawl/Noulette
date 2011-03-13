@@ -462,7 +462,7 @@ alert('Please purchase additional chips.');
     });
 
     socket.connect().on('message', function (msg) {
-//console.log(msg);
+console.log(msg);
         if (msg.client_id) {
             user.client_id = msg.client_id;
         }

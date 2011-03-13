@@ -174,108 +174,7 @@ var tests = {
 }
 
 function Bet_board() {  // this name sucks
-    return {
-        "0": {
-        },
-        "28": {
-        },
-        "9": {
-        },
-        "26": {
-        },
-        "30": {
-        },
-        "11": {
-        },
-        "7": {
-        },
-        "20": {
-        },
-        "32": {
-        },
-        "17": {
-        },
-        "5": {
-        },
-        "22": {
-        },
-        "34": {
-        },
-        "15": {
-        },
-        "3": {
-        },
-        "24": {
-        },
-        "36": {
-        },
-        "13": {
-        },
-        "1": {
-        },
-        "00": {
-        },
-        "27": {
-        },
-        "10": {
-        },
-        "25": {
-        },
-        "29": {
-        },
-        "12": {
-        },
-        "8": {
-        },
-        "19": {
-        },
-        "31": {
-        },
-        "18": {
-        },
-        "6": {
-        },
-        "21": {
-        },
-        "33": {
-        },
-        "16": {
-        },
-        "4": {
-        },
-        "23": {
-        },
-        "35": {
-        },
-        "14": {
-        },
-        "2": {
-        }, 
-        "column_1": {
-        },
-        "column_2": {
-        },
-        "column_3": {
-        },
-        "1_12": {
-        },
-        "13_24": {
-        },
-        "25_36": {
-        },
-        "1_18": {
-        },            
-        "19_36": {
-        },     
-        "even": {
-        },                                   
-        "odd": {
-        },  
-        "red": {
-        },            
-        "black": {
-        }
-    };
+    return JSON.parse(fs.readFileSync('/var/www/roulette/pub/js/board.js', 'utf8'));
 }
 
 function rando(arr) {
@@ -295,40 +194,55 @@ function spin() {
     return results;
 }
 
-var results, board, keys;
+var board;
 (function () {
     board  = new Bet_board;
 }());
 
 setInterval(function () {
-    var x, i;
+    var x, i, l, keys, results;
 //    board  = new Bet_board;
     results = spin();
     keys = _.keys(players);
     for (i = 0; i < keys.length; i++) {
         var x = [keys][i];
     }
-//console.log('num:');
-//console.log(results.number);
-//console.log(board[results.number]);
-//console.log('color:');
-//console.log(results.color);
-//console.log(board[results.color]);
-console.log('parity:');
-console.log(results.parity);
-console.log(board[results.parity]);
+
+if (board[results.number]) {
+        // credit 35
+}
+if (board[results.third]) {
+        // credit 2
+}
+if (board[results.column]) {
+        // credit 2
+}
+if (board[results.half]) {
+        // credit 1
+}
 if (board[results.parity]) {
     x = _.keys(board[results.parity]);
-    for (i = 0; i < x.length; i++) {
-console.log(x[i]);
+    for (i = 0, l = x.length; i < l; i += 1) {
         socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won!', vithout(keys, x[i]));        
+        players[x[i]]['credit'](1);
     }
 }
+if (board[results.color]) {
+    x = _.keys(board[results.color]);
+    for (i = 0, l = x.length; i < l; i += 1) {
+        socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won!', vithout(keys, x[i]));        
+        players[x[i]]['credit'](1);
+    }
+}
+
+// } else { 
+//  players[x[i]]['debit'](x);
+
     socket.broadcast({
         spin: results
     });
     board  = new Bet_board;
-}, 10000);
+}, 20000);
 
 function update_players_list() {
     var view = {
@@ -354,14 +268,11 @@ function User(client_id, name) {
     this.bet = new Bet();
 }
 
-Bet.prototype.add_bet = function (widget, wager, client_id) {
+Bet.prototype.add_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
     board[widget][client_id] = wager;
 };
-Bet.prototype.remove_bet = function (widget, wager) {
-//console.log('widget: ' + widget);
-//console.log('removing wager: ' + wager);
-//    this.bets = vithout(this.bets, bet);    
-//    this.debit(bet);
+Bet.prototype.remove_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
+//    board[widget][client_id] = wager;
 };
 User.prototype.credit = function (chips) {
     var credit_amount = chips || 1;
