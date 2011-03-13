@@ -174,7 +174,7 @@ var tests = {
 }
 
 function Bet_board() {  // this name sucks
-    return JSON.parse(fs.readFileSync('/var/www/roulette/pub/js/board.js', 'utf8'));
+    return JSON.parse(fs.readFileSync('./pub/js/board.js', 'utf8'));
 }
 
 function rando(arr) {
