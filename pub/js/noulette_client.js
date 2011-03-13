@@ -92,155 +92,266 @@
             ],
             "0": {
                 "color": "green",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "column_2":true,
+                "third": "first"                
             },
             "28": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "third": "third",
+                "half": "second"  
             },
             "9": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "first",
+                "half": "first" 
             },
             "26": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even",
+                "column_2":true,
+                "third": "third",
+                "half": "second"                 
             },
             "30": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3":true,
+                "third": "third",
+                "half": "second"
             },
             "11": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "first",
+                "half": "first"                 
             },
             "7": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1":true,
+                "third": "first",
+                "half": "first"  
             },
             "20": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even",
+                "column_2":true,
+                "half": "second"                
             },
             "32": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even",
+                "column_2":true,
+                "third": "third",
+                "half": "second"                
             },
             "17": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "second",
+                "half": "first"                 
             },
             "5": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "first",
+                "half": "first"                 
             },
             "22": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "third": "second",
+                "half": "second"  
             },
             "34": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "third": "third",
+                "half": "second"  
             },
             "15": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "second",
+                "half": "first"
             },
             "3": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "first",
+                "half": "first"  
             },
             "24": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3":true,
+                "third": "second",
+                "half": "second"
             },
             "36": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3":true,
+                "third": "third",
+                "half": "second"
             },
             "13": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1":true,
+                "third": "second",
+                "half": "first"  
             },
             "1": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1": true,
+                "third": "first"
             },
             "00": {
                 "color": "green",
-                "parity": "even" 
+                "parity": "even", 
+                "column_2":true,
+                "third": "first"
             },
             "27": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "third",
+                "half": "second"
             },
             "10": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "third": "first",
+                "half": "first"  
             },
             "25": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1":true,
+                "third": "third",
+                "half": "second"  
             },
             "29": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "third",
+                "half": "second"                 
             },
             "12": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3":true,
+                "third": "first",
+                "half": "first"
             },
             "8": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even",
+                "column_2":true,
+                "third": "first",
+                "half": "first"                 
             },
             "19": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1":true,
+                "third": "second",
+                "half": "second"  
             },
             "31": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_1":true,
+                "third": "third",
+                "half": "second"  
             },
             "18": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3":true,
+                "third": "second",
+                "half": "first"
             },
             "6": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even", 
+                "column_3": true,
+                "third": "first",
+                "half": "first" 
             },
             "21": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "second",
+                "half": "second"
             },
             "33": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd", 
+                "column_3":true,
+                "third": "third",
+                "half": "second"
             },
             "16": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even", 
+                "column_1":true,
+                "third": "second",
+                "half": "first"  
             },
             "4": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even",
+                "column_1":true,
+                "third": "first",
+                "half": "first" 
             },
             "23": {
                 "color": "red",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "second",
+                "half": "second"                 
             },
             "35": {
                 "color": "black",
-                "parity": "odd" 
+                "parity": "odd",
+                "column_2":true,
+                "third": "third",
+                "half": "second"                
             },
             "14": {
                 "color": "red",
-                "parity": "even" 
+                "parity": "even",
+                "column_2":true,
+                "third": "second",
+                "half": "first"                 
             },
             "2": {
                 "color": "black",
-                "parity": "even" 
+                "parity": "even", 
+                "column_2":true,
+                "third": "first",
+                "half": "first"
             } 
         }
     }
@@ -314,7 +425,9 @@
         chips.credit(5);
     };
 
-    var socket = new io.Socket(null, {port: 8000});
+    var socket = new io.Socket(null, {
+        port: 8000
+    });
 
     $('#layout').delegate('td', 'click', function () {
         var key = this.id
@@ -325,23 +438,39 @@
         if ($(this).hasClass('chip')) {
             chips.credit();
             $(this).removeClass('chip');
+            bet['action'] = 'remove';
+            socket.send({
+                bet: {
+                    action: 'remove_bet',
+                    widget: key,
+                    wager: val
+                }
+            });        
         } else if (chips.chip_count) {
             chips.debit();                
             $(this).addClass('chip');
             socket.send({
-                bet: bet
-            });        
+                bet: {
+                    action: 'add_bet',
+                    widget: key,
+                    wager: val
+                }
+            });  
         } else {
 alert('Please purchase additional chips.');        
         }
     });
 
     socket.connect().on('message', function (msg) {
+//console.log(msg);
         if (msg.client_id) {
             user.client_id = msg.client_id;
         }
         if (msg.players_arr) {
             document.getElementById('players').innerHTML = msg.players_arr;
+        }
+        if (msg.new_chip_count) {
+            document.getElementById('chip_count').innerHTML = msg.new_chip_count;
         }
         if (msg.spin) {
             var result = msg.spin;

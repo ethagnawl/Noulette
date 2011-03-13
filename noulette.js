@@ -103,7 +103,7 @@ var html_template = "\
             <table id='six_wide'>\
 	            <tr>\
                     <td id='1_18' class='half yellow'>1-18</td>\
-                    <td id='even class='parity yellow''>Even</td>\
+                    <td id='even' class='parity yellow''>Even</td>\
                     <td id='red' class='red color'>Red</td>\
                     <td id='black' class='black color'>Black</td>\
                     <td id='odd' class='parity yellow'>Odd</td>\
@@ -130,6 +130,7 @@ var sys = require('sys')
     ,   socket = require('socket.io').listen(app)
     ,   file = new(static.Server)('./pub')
     ,   Mustache = require('mustache')
+    ,   _ = require('underscore')
     ,   view = {
         title: "Noulette"
     }
@@ -137,6 +138,11 @@ var sys = require('sys')
     ,   players = {}
     ,   layout_config = JSON.parse(fs.readFileSync(filename, 'utf8'))
 ;
+
+//use(require('facebook').Facebook, {
+//  apiKey: '5af3275cc23a696032fcf1e5125fa28a', 
+//  apiSecret: '4e4af39c25f8eaf974820a6c77b14728'
+//})
 
 function vithout(arr) {
     var args = Array.prototype.slice.call(arguments).slice(1, arguments.length), arg, j, l, ll;
@@ -151,6 +157,127 @@ function vithout(arr) {
     return arr;
 }
 
+var tests = {
+    // TODO: add "00" tests
+    column_test: function (result) {
+        return layout_config.columns.column_1.indexOf(Number(result)) !== -1 ? 'column_1' : layout_config.columns.column_2.indexOf(Number(result))!== -1 ? 'column_2' : 'column_3';
+    },
+    which_third_test: function (result) {
+        return Number(result) < 13 ? '1_12' : Number(result) < 25 ? '13_24' : '25_36';        
+    },
+    which_half_test: function (result) {
+        return Number(result) < 19 ? '1_18' : '19_36'    
+    },
+    parity_test: function (result) {
+        return result === 'even' ? true : result === 'odd' ? true : 'something went wrong...';
+    }
+}
+
+function Bet_board() {  // this name sucks
+    return {
+        "0": {
+        },
+        "28": {
+        },
+        "9": {
+        },
+        "26": {
+        },
+        "30": {
+        },
+        "11": {
+        },
+        "7": {
+        },
+        "20": {
+        },
+        "32": {
+        },
+        "17": {
+        },
+        "5": {
+        },
+        "22": {
+        },
+        "34": {
+        },
+        "15": {
+        },
+        "3": {
+        },
+        "24": {
+        },
+        "36": {
+        },
+        "13": {
+        },
+        "1": {
+        },
+        "00": {
+        },
+        "27": {
+        },
+        "10": {
+        },
+        "25": {
+        },
+        "29": {
+        },
+        "12": {
+        },
+        "8": {
+        },
+        "19": {
+        },
+        "31": {
+        },
+        "18": {
+        },
+        "6": {
+        },
+        "21": {
+        },
+        "33": {
+        },
+        "16": {
+        },
+        "4": {
+        },
+        "23": {
+        },
+        "35": {
+        },
+        "14": {
+        },
+        "2": {
+        }, 
+        "column_1": {
+        },
+        "column_2": {
+        },
+        "column_3": {
+        },
+        "1_12": {
+        },
+        "13_24": {
+        },
+        "25_36": {
+        },
+        "1_18": {
+        },            
+        "19_36": {
+        },     
+        "even": {
+        },                                   
+        "odd": {
+        },  
+        "red": {
+        },            
+        "black": {
+        }
+    };
+}
+
 function rando(arr) {
     return Math.floor(Math.random() * arr.length);
 }
@@ -161,19 +288,46 @@ function spin() {
             number: result.toString()
             ,   color: layout_config.numbers[result]['color']
             ,   parity: layout_config.numbers[result]['parity']
+            ,   third: tests.which_third_test(result)
+            ,   half: tests.which_half_test(result)
         }
     ;
     return results;
 }
 
-var results;
+var results, board, keys;
+(function () {
+    board  = new Bet_board;
+}());
+
 setInterval(function () {
+    var x, i;
+//    board  = new Bet_board;
     results = spin();
-console.log(results);    
+    keys = _.keys(players);
+    for (i = 0; i < keys.length; i++) {
+        var x = [keys][i];
+    }
+//console.log('num:');
+//console.log(results.number);
+//console.log(board[results.number]);
+//console.log('color:');
+//console.log(results.color);
+//console.log(board[results.color]);
+console.log('parity:');
+console.log(results.parity);
+console.log(board[results.parity]);
+if (board[results.parity]) {
+    x = _.keys(board[results.parity]);
+    for (i = 0; i < x.length; i++) {
+console.log(x[i]);
+        socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won!', vithout(keys, x[i]));        
+    }
+}
     socket.broadcast({
         spin: results
-        //  
     });
+    board  = new Bet_board;
 }, 10000);
 
 function update_players_list() {
@@ -189,30 +343,68 @@ function update_players_list() {
     });        
 }
 
+function Bet() {
+    this.bets = [];
+}
+
+function User(client_id, name) {
+    this.client_id = client_id;
+    this.name = name;
+    this.chip_count = 20;
+    this.bet = new Bet();
+}
+
+Bet.prototype.add_bet = function (widget, wager, client_id) {
+    board[widget][client_id] = wager;
+};
+Bet.prototype.remove_bet = function (widget, wager) {
+//console.log('widget: ' + widget);
+//console.log('removing wager: ' + wager);
+//    this.bets = vithout(this.bets, bet);    
+//    this.debit(bet);
+};
+User.prototype.credit = function (chips) {
+    var credit_amount = chips || 1;
+    this.chip_count += credit_amount;
+    this.update_chip_count();
+};
+User.prototype.debit = function (chips) {
+    var debit_amount = chips || 1;
+    this.chip_count -= debit_amount;
+    this.update_chip_count();
+};
+User.prototype.update_chip_count = function () {
+    if (this.chip_count) {
+//        broadcast new chip count
+        socket.broadcast({
+            new_chip_count: this.chip_count
+        });  
+    } else {
+//        broadcast 'ca$hed out!'
+        socket.broadcast({
+            new_chip_count: this.chip_count
+        });  
+    }
+};
+
 socket.on('connection', function (client) {
-    socket.broadcast({
-        client_id: client.sessionId
-    });
-    client.on('disconnect', function () {
-        vithout(players_arr, players[client.sessionId]['user_name']);
-        players[client.sessionId]['active'] = false;
-        update_players_list();
-    }).on('message', function (msg) {
+    var user;
+
+    client.on('message', function (msg) {
         if (msg.bet) {
-            players[client.sessionId]['bets'][players[client.sessionId]['bets'].length] = msg.bet;  // holy shit, make this a var
-console.log(players[client.sessionId]);
+//console.log(msg);            
+            user.bet[msg.bet.action](msg.bet.widget, msg.bet.wager, user.client_id);    // add/remove bet
         }
         if (msg.user_name) {
-            players_arr[players_arr.length] = msg.user_name;    // gheeeett0
-            players[client.sessionId] = {
-                client_id: client.sessionId,
-                user_name: msg.user_name,
-                active: true,
-                chips: 5,
-                bets: []
-            };
+            user = new User(client.sessionId, msg.user_name);
+            user.update_chip_count();
+            players[client.sessionId] = user;
+            players_arr[players_arr.length] = user.name;    // gheeeett0
             update_players_list();
         }
+    }).on('disconnect', function () {
+        vithout(players_arr, user.name);
+        update_players_list();
     });
 });
 
