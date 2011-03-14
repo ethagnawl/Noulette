@@ -200,21 +200,31 @@ var board;
     board  = new Bet_board;
 }());
 
+function payout(keys, x, winners, widget, winnings) {
+    var winner, l;
+    for (winner = 0, l = winners.length; winner < l; winner += 1) {
+        socket.broadcast('congrats, ' + players[x[winner]]['name'] + ' you\'ve won! - ' + widget, _.without(keys, x[winner]));        
+        players[x[winner]]['credit'](winnings);
+    }
+}
+
 setInterval(function () {
     var x, i, l, keys, results;
     results = spin();
     keys = _.keys(players);
-    for (i = 0; i < keys.length; i++) {
-        var x = [keys][i];
+
+    for (i = 0, l = keys.length; i < l; i += 1) {
+        x = [keys][i];
     }
-    if (board[results.number]) {
-            // credit 35
-        x = _.keys(board[results.number]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.number, _.without(keys, x[i]));        
-            players[x[i]]['credit'](35);
-        }
+
+    if (board[results.number]) {    // credit 35
+        var widget = results.number
+            ,   winners = _.keys(board[widget])
+        ;
+        payout(keys, x, winners, widget, 35);
     }
+
+    
     if (board[results.third]) {
             // credit 2
         x = _.keys(board[results.third]);
@@ -261,7 +271,7 @@ setInterval(function () {
         spin: results
     });
     board  = new Bet_board;
-}, 30000);
+}, 10000);
 
 function update_players_list() {
     var view = {
