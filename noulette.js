@@ -209,59 +209,47 @@ function payout(keys, x, winners, widget, winnings) {
 }
 
 setInterval(function () {
-    var x, i, l, keys, results;
+    var x, i, l, keys, results, widget, winners;
     results = spin();
     keys = _.keys(players);
 
     for (i = 0, l = keys.length; i < l; i += 1) {
-        x = [keys][i];
+        x = [keys][i];  // TODO: rename
     }
+    
+    //  TODO: build array of result objs
+    //  TODO: result obj constructor function    
 
     if (board[results.number]) {    // credit 35
-        var widget = results.number
-            ,   winners = _.keys(board[widget])
-        ;
+        widget = results.number;
+        winners = _.keys(board[widget]);
         payout(keys, x, winners, widget, 35);
     }
 
-    
-    if (board[results.third]) {
-            // credit 2
-        x = _.keys(board[results.third]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.third, _.without(keys, x[i]));        
-            players[x[i]]['credit'](2);
-        }
+    if (board[results.third]) { // credit 2
+        widget = results.third;
+        winners = _.keys(board[widget]);
+        payout(keys, x, winners, widget, 2);
     }
-    if (board[results.column]) {
-            // credit 2
-        x = _.keys(board[results.column]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.column, _.without(keys, x[i]));        
-            players[x[i]]['credit'](2);
-        }
+    if (board[results.column]) {    // credit 2
+        widget = results.column;
+        winners = _.keys(board[widget]);
+        payout(keys, x, winners, widget, 2);
     }
-    if (board[results.half]) {
-            // credit 1
-        x = _.keys(board[results.half]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.half, _.without(keys, x[i]));        
-            players[x[i]]['credit'](1);
-        }
+    if (board[results.half]) {  // credit 1
+        widget = results.half;
+        winners = _.keys(board[widget]);
+        payout(keys, x, winners, widget, 1);
     }
-    if (board[results.parity]) {
-        x = _.keys(board[results.parity]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.parity, _.without(keys, x[i]));        
-            players[x[i]]['credit'](1);
-        }
+    if (board[results.parity]) {  // credit 1
+        widget = results.parity;
+        winners = _.keys(board[widget]);
+        payout(keys, x, winners, widget, 1);
     }
-    if (board[results.color]) {
-        x = _.keys(board[results.color]);
-        for (i = 0, l = x.length; i < l; i += 1) {
-            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.color, _.without(keys, x[i]));        
-            players[x[i]]['credit'](1);
-        }
+    if (board[results.color]) { //  credit 1
+        widget = results.color;
+        winners = _.keys(board[widget]);
+        payout(keys, x, winners, widget, 1);
     }
 
     // } else { 
