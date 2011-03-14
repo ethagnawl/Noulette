@@ -189,6 +189,7 @@ function spin() {
             ,   parity: layout_config.numbers[result]['parity']
             ,   third: tests.which_third_test(result)
             ,   half: tests.which_half_test(result)
+            ,   column: tests.column_test(result)
         }
     ;
     return results;
@@ -201,48 +202,66 @@ var board;
 
 setInterval(function () {
     var x, i, l, keys, results;
-//    board  = new Bet_board;
     results = spin();
     keys = _.keys(players);
     for (i = 0; i < keys.length; i++) {
         var x = [keys][i];
     }
-
-if (board[results.number]) {
-        // credit 35
-}
-if (board[results.third]) {
-        // credit 2
-}
-if (board[results.column]) {
-        // credit 2
-}
-if (board[results.half]) {
-        // credit 1
-}
-if (board[results.parity]) {
-    x = _.keys(board[results.parity]);
-    for (i = 0, l = x.length; i < l; i += 1) {
-        socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won!', vithout(keys, x[i]));        
-        players[x[i]]['credit'](1);
+    if (board[results.number]) {
+            // credit 35
+        x = _.keys(board[results.number]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.number, _.without(keys, x[i]));        
+            players[x[i]]['credit'](35);
+        }
     }
-}
-if (board[results.color]) {
-    x = _.keys(board[results.color]);
-    for (i = 0, l = x.length; i < l; i += 1) {
-        socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won!', vithout(keys, x[i]));        
-        players[x[i]]['credit'](1);
+    if (board[results.third]) {
+            // credit 2
+        x = _.keys(board[results.third]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.third, _.without(keys, x[i]));        
+            players[x[i]]['credit'](2);
+        }
     }
-}
+    if (board[results.column]) {
+            // credit 2
+        x = _.keys(board[results.column]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.column, _.without(keys, x[i]));        
+            players[x[i]]['credit'](2);
+        }
+    }
+    if (board[results.half]) {
+            // credit 1
+        x = _.keys(board[results.half]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.half, _.without(keys, x[i]));        
+            players[x[i]]['credit'](1);
+        }
+    }
+    if (board[results.parity]) {
+        x = _.keys(board[results.parity]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.parity, _.without(keys, x[i]));        
+            players[x[i]]['credit'](1);
+        }
+    }
+    if (board[results.color]) {
+        x = _.keys(board[results.color]);
+        for (i = 0, l = x.length; i < l; i += 1) {
+            socket.broadcast('congrats, ' + players[x[i]]['name'] + ' you\'ve won! - ' + results.color, _.without(keys, x[i]));        
+            players[x[i]]['credit'](1);
+        }
+    }
 
-// } else { 
-//  players[x[i]]['debit'](x);
+    // } else { 
+    //  players[x[i]]['debit'](x);
 
     socket.broadcast({
         spin: results
     });
     board  = new Bet_board;
-}, 20000);
+}, 30000);
 
 function update_players_list() {
     var view = {

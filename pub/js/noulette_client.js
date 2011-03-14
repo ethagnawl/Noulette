@@ -392,7 +392,7 @@
 
     var chips = {
         owner: null,
-        chip_count: 5,
+        chip_count: 40,
         credit: function (chips) {
             var credit_amount = chips || 1;
             this.chip_count += credit_amount;
