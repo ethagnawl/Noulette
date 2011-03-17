@@ -355,7 +355,8 @@
             } 
         }
     }
-    ,   user = {}
+        ,   user = {}
+        ,   betting_status = false;
     ;
 
     var tests = {
@@ -392,22 +393,20 @@
 
     var chips = {
         owner: null,
-        chip_count: 40,
+        chip_count: 0,
         credit: function (chips) {
             var credit_amount = chips || 1;
             this.chip_count += credit_amount;
             this.update_chip_count();
-            socket.send(this);
         },
         debit: function (chips) {
             var debit_amount = chips || 1;
             this.chip_count -= debit_amount;
             this.update_chip_count();
-            socket.send(this);
         },
         update_chip_count: function () {
             if (chips.chip_count) {
-                document.getElementById('chip_count').innerHTML = chips.chip_count;
+                document.getElementById('chip_count').innerHTML = this.chip_count;
             } else {
                 document.getElementById('chip_count').innerHTML = 'ca$hed out!';            
             }
@@ -429,42 +428,56 @@
         port: 8000
     });
 
-    $('#layout').delegate('td', 'click', function () {
-        var key = this.id
-            ,   val = 1
-            ,   bet = {}
-        ;
-        bet[key] = val;
-        if ($(this).hasClass('chip')) {
-            chips.credit();
-            $(this).removeClass('chip');
-            bet['action'] = 'remove';
-            socket.send({
-                bet: {
-                    action: 'remove_bet',
-                    widget: key,
-                    wager: val
-                }
-            });        
-        } else if (chips.chip_count) {
-            chips.debit();                
-            $(this).addClass('chip');
-            socket.send({
-                bet: {
-                    action: 'add_bet',
-                    widget: key,
-                    wager: val
-                }
-            });  
-        } else {
+        $('#layout').delegate('td', 'click', function () {
+            if (betting_status) {
+                var key = this.id
+                    ,   val = 1
+                    ,   bet = {}
+                ;
+                bet[key] = val;
+                if ($(this).hasClass('chip')) {
+                    chips.credit();
+                    $(this).removeClass('chip');
+                    bet['action'] = 'remove';
+                    socket.send({
+                        bet: {
+                            action: 'remove_bet',
+                            widget: key,
+                            wager: val
+                        }
+                    });        
+                } else if (chips.chip_count) {
+                    chips.debit();                
+                    $(this).addClass('chip');
+                    socket.send({
+                        bet: {
+                            action: 'add_bet',
+                            widget: key,
+                            wager: val
+                        }
+                    });  
+                } else {
 alert('Please purchase additional chips.');        
-        }
-    });
+                }
+            } else {
+console.log('sorry, no more bets.');        
+            }
+        });    
 
     socket.connect().on('message', function (msg) {
-console.log(msg);
+//console.log(msg);
+        if (msg.payout) {
+console.log(msg.payout);            
+            chips.credit(msg.payout.winnings);
+        }
+        if (msg.chip_count) {
+            chips.chip_count = msg.chip_count; 
+        }
         if (msg.client_id) {
             user.client_id = msg.client_id;
+        }
+        if (msg.hasOwnProperty('betting_status')) {
+            betting_status = msg.betting_status;                    
         }
         if (msg.players_arr) {
             document.getElementById('players').innerHTML = msg.players_arr;
@@ -473,88 +486,42 @@ console.log(msg);
             document.getElementById('chip_count').innerHTML = msg.new_chip_count;
         }
         if (msg.spin) {
-            var result = msg.spin;
+            var results = msg.spin;
             clear.flash();
             $('.result').removeClass('result');
             $('#wheel').addClass('spin');
             setTimeout(function () {
                 var li_result = document.createElement('li')
                     ,   bets = []
-                    ,   column = tests.column_test(result.number)
-                    ,   which_third = tests.which_third_test(result.number)                
-                    ,   which_half = tests.which_half_test(result.number)                
                     ,   winner = false
                     ,   bet
                     ,   l
-                    ,   $el
+                    ,   result
                 ;
-                li_result.innerHTML = result.number + ' ' + result.color + ' ' + result.parity;
+
+                li_result.innerHTML = results.number + ' ' + results.color + ' ' + results.parity;
                 document.getElementById('results').appendChild(li_result);
 
-//                $('#layout').find('.chip').each(function () {
-//                    bets[bets.length] = this.id;
-//                });
-
-//                for (bet = 0, l = bets.length; bet < l; bet += 1) {
-//                    $el = $(document.getElementById(bets[bet]));
-//                    if ($el.hasClass('color')) {
-//                        if (bets[bet] === result['color']) {
-//                            winner = true;
-//                            chips.credit(1);
-//                        }
-//                    }
-//                    if ($el.hasClass('half')) {
-//                        if (bets[bet] === which_half) {
-//                            winner = true;
-//                            chips.credit(1);
-//                        }
-//                    }
-//                    if ($el.hasClass('third')) {
-//                        if (bets[bet] === which_third) {
-//                            winner = true;
-//                            chips.credit(3);
-//                        }
-//                    }                
-//                    if (tests.parity_test(bets[bet])) {
-//                        if (bets[bet] === result['parity']) {
-//                            winner = true;
-//                            chips.credit(2);
-//                        }
-//                    }
-//                    if (bets[bet] === result['number']) {
-//                        winner = true;
-//                        chips.credit(35);
-//                    }
-//                }
-        
-                if (winner) {
-                    flash();
+               if (winner) {
+                   flash();
                 }
 
                 clear.bets();            
 
-                $('#' + result.number + ', #' + result.parity + ', #' + result.color + ', #' + which_half + ', #' + which_third + ', #' + column).addClass('result');
+                for (result in results) {
+                    if (results.hasOwnProperty(result)) {
+                        $(document.getElementById(results[result])).addClass('result');
+                    }
+                }
 
                 setTimeout(function () {
                     $('#wheel').removeClass('spin');
                     clear.results();
                 }, 4000);
+ 
             }, 2000);
         }
     });
-    
-//    $('#layout').delegate('td', 'click', function () {
-//        if ($(this).hasClass('chip')) {
-//            chips.credit();
-//            $(this).removeClass('chip');
-//        } else if (chips.chip_count) {
-//            chips.debit();                
-//            $(this).addClass('chip');
-//            
-//        } else {
-//            alert('Please take a left at the Native American Motif behind the table and purchase some additional chips.');        
-//        }
-//    });        
 
     var user_name = prompt('hey there! what\'s your name?');
     if (user_name) {

@@ -137,25 +137,8 @@ var sys = require('sys')
     ,   players_arr = [] // use _ to build this from players{}
     ,   players = {}
     ,   layout_config = JSON.parse(fs.readFileSync(filename, 'utf8'))
+    ,   board
 ;
-
-//use(require('facebook').Facebook, {
-//  apiKey: '5af3275cc23a696032fcf1e5125fa28a', 
-//  apiSecret: '4e4af39c25f8eaf974820a6c77b14728'
-//})
-
-function vithout(arr) {
-    var args = Array.prototype.slice.call(arguments).slice(1, arguments.length), arg, j, l, ll;
-        for (arg = 0, l = args.length; arg < l; arg += 1) {
-            for (j = 0, ll = arr.length; j < ll; j += 1) {
-                if (arr[j] === args[arg]) {
-                    arr.splice(j, 1); 
-                    j -= 1;
-                }
-            }
-        }
-    return arr;
-}
 
 var tests = {
     // TODO: add "00" tests
@@ -171,7 +154,22 @@ var tests = {
     parity_test: function (result) {
         return result === 'even' ? true : result === 'odd' ? true : 'something went wrong...';
     }
-}
+},
+betting = {
+    open: function () {
+        this.status = true;
+        message_players({
+            betting_status: betting.status
+        });        
+    },
+    close: function (callback) {
+        this.status = false;
+        message_players({
+            betting_status: betting.status
+        });        
+        callback();
+    }
+};
 
 function Bet_board() {  // this name sucks
     return JSON.parse(fs.readFileSync('./pub/js/board.js', 'utf8'));
@@ -179,6 +177,10 @@ function Bet_board() {  // this name sucks
 
 function rando(arr) {
     return Math.floor(Math.random() * arr.length);
+}
+
+function message_players(msg) {
+    socket.broadcast(msg);        
 }
 
 function spin() {
@@ -195,81 +197,40 @@ function spin() {
     return results;
 }
 
-var board;
-(function () {
-    board  = new Bet_board;
-}());
+function generate_active_players_arr() {
+    var players_arr = [];
+    for (player in players) {
+        if (players.hasOwnProperty(player)) {
+            players_arr[players_arr.length] = players[player]['name'];
+        }
+    }
+    return players_arr;
+}
 
-function payout(keys, x, winners, widget, winnings) {
-    var winner, l;
+function payout(keys, winners, widget, winnings) {
+    var winner, name, l;
     for (winner = 0, l = winners.length; winner < l; winner += 1) {
-        socket.broadcast('congrats, ' + players[x[winner]]['name'] + ' you\'ve won! - ' + widget, _.without(keys, x[winner]));        
-        players[x[winner]]['credit'](winnings);
+        name = players[winners[winner]]['name'];
+        var exclude = keys.length > 1 ? _.without(keys, players[winners[winner]]['client_id']) : null;
+        socket.broadcast({
+            payout: {
+                message: 'congrats, ' + name + ' you\'ve won! - ' + widget,
+                chips: winnings
+            }
+        }, exclude);
+        players[winners[winner]]['credit'](winnings);
     }
 }
 
-setInterval(function () {
-    var x, i, l, keys, results, widget, winners;
-    results = spin();
-    keys = _.keys(players);
-
-    for (i = 0, l = keys.length; i < l; i += 1) {
-        x = [keys][i];  // TODO: rename
-    }
-    
-    //  TODO: build array of result objs
-    //  TODO: result obj constructor function    
-
-    if (board[results.number]) {    // credit 35
-        widget = results.number;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 35);
-    }
-
-    if (board[results.third]) { // credit 2
-        widget = results.third;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 2);
-    }
-    if (board[results.column]) {    // credit 2
-        widget = results.column;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 2);
-    }
-    if (board[results.half]) {  // credit 1
-        widget = results.half;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 1);
-    }
-    if (board[results.parity]) {  // credit 1
-        widget = results.parity;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 1);
-    }
-    if (board[results.color]) { //  credit 1
-        widget = results.color;
-        winners = _.keys(board[widget]);
-        payout(keys, x, winners, widget, 1);
-    }
-
-    // } else { 
-    //  players[x[i]]['debit'](x);
-
-    socket.broadcast({
-        spin: results
-    });
-    board  = new Bet_board;
-}, 10000);
-
 function update_players_list() {
     var view = {
-        players: players_arr 
+        players: generate_active_players_arr()
     }
         ,   template = '{{#players}}<li>{{.}}</li>{{/players}}'
         ,   players_partial = Mustache.to_html(template, view)
     ;
 
-    socket.broadcast({
+    message_players({
         'players_arr': players_partial
     });        
 }
@@ -304,34 +265,103 @@ User.prototype.debit = function (chips) {
 User.prototype.update_chip_count = function () {
     if (this.chip_count) {
 //        broadcast new chip count
-        socket.broadcast({
+        message_players({
             new_chip_count: this.chip_count
-        });  
+        });
     } else {
 //        broadcast 'ca$hed out!'
-        socket.broadcast({
+        message_players({
             new_chip_count: this.chip_count
-        });  
+        });
     }
 };
+
+(function init() {
+    board  = new Bet_board;
+}());
+
+setInterval(function () {
+    var i, l, widget, winners
+        ,   results = spin()
+        ,   keys = _.keys(players)
+        ,   arr_of_player_names = generate_active_players_arr()
+    ;
+
+    betting.close(function () {
+        setTimeout(function () {
+            betting.open();
+        }, 10000);
+    });
+
+    //  TODO: build array of result objs
+    //  TODO: result obj constructor function    
+
+    if (board[results.number]) {    // credit 35
+        widget = results.number;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 35);
+    }
+
+    if (board[results.third]) { // credit 2
+        widget = results.third;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 2);
+    }
+    if (board[results.column]) {    // credit 2
+        widget = results.column;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 2);
+    }
+    if (board[results.half]) {  // credit 1
+        widget = results.half;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 1);
+    }
+    if (board[results.parity]) {  // credit 1
+        widget = results.parity;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 1);
+    }
+    if (board[results.color]) { //  credit 1
+        widget = results.color;
+        winners = _.keys(board[widget]);
+        payout(keys, winners, widget, 1);
+    }
+
+//     } else { 
+//      players[x[i]]['debit'](x);
+
+    socket.broadcast({
+        spin: results
+    });
+
+    board  = new Bet_board;
+
+}, 10000);
 
 socket.on('connection', function (client) {
     var user;
 
+    betting.open();
+
     client.on('message', function (msg) {
-        if (msg.bet) {
-//console.log(msg);            
+        if (msg.bet && betting.status) {
             user.bet[msg.bet.action](msg.bet.widget, msg.bet.wager, user.client_id);    // add/remove bet
+        }
+        if (msg.bet && !betting.status) {
+console.log('nice try');            
         }
         if (msg.user_name) {
             user = new User(client.sessionId, msg.user_name);
             user.update_chip_count();
             players[client.sessionId] = user;
-            players_arr[players_arr.length] = user.name;    // gheeeett0
             update_players_list();
+            client.send({
+                chip_count: players[client.sessionId]['chip_count']
+            });
         }
     }).on('disconnect', function () {
-        vithout(players_arr, user.name);
+        delete players[user.client_id];
         update_players_list();
     });
 });
