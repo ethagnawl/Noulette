@@ -121,7 +121,6 @@ var html_template = "\
 
 var sys = require('sys')
     ,   fs = require('fs')
-    ,   filename = process.argv[2]
     ,   Url = require('url')
     ,   http = require('http')
     ,   querystring = require('querystring')
@@ -134,9 +133,8 @@ var sys = require('sys')
     ,   view = {
         title: "Noulette"
     }
-    ,   players_arr = [] // use _ to build this from players{}
     ,   players = {}
-    ,   layout_config = JSON.parse(fs.readFileSync(filename, 'utf8'))
+    ,   layout_config = JSON.parse(fs.readFileSync('./pub/js/layout_config.js', 'utf8'))
     ,   board
 ;
 
@@ -156,15 +154,16 @@ var tests = {
     }
 },
 betting = {
+    status: false,
     open: function () {
         this.status = true;
-        message_players({
-            betting_status: betting.status
+        message.players({
+            betting_status: this.status
         });        
     },
     close: function (callback) {
         this.status = false;
-        message_players({
+        message.players({
             betting_status: betting.status
         });        
         callback();
@@ -179,8 +178,13 @@ function rando(arr) {
     return Math.floor(Math.random() * arr.length);
 }
 
-function message_players(msg) {
-    socket.broadcast(msg);        
+var message = {
+    player: function (id, msg) {
+        socket.clients[id]['send'](msg);
+    },
+    players: function (msg) {
+        socket.broadcast(msg);            
+    }
 }
 
 function spin() {
@@ -207,17 +211,17 @@ function generate_active_players_arr() {
     return players_arr;
 }
 
-function payout(keys, winners, widget, winnings) {
-    var winner, name, l;
+function payout(winners, widget, winnings) {
+    var winner, id, name, l;
     for (winner = 0, l = winners.length; winner < l; winner += 1) {
         name = players[winners[winner]]['name'];
-        var exclude = keys.length > 1 ? _.without(keys, players[winners[winner]]['client_id']) : null;
-        socket.broadcast({
+        id = players[winners[winner]]['client_id'];
+        message.player(id, {
             payout: {
-                message: 'congrats, ' + name + ' you\'ve won! - ' + widget,
+                message: 'congrats, ' + name + ' you\'ve won! - ' + widget + ' ' + winnings,
                 chips: winnings
             }
-        }, exclude);
+        });
         players[winners[winner]]['credit'](winnings);
     }
 }
@@ -230,51 +234,56 @@ function update_players_list() {
         ,   players_partial = Mustache.to_html(template, view)
     ;
 
-    message_players({
+    message.players({
         'players_arr': players_partial
     });        
 }
 
 function Bet() {
-    this.bets = [];
 }
+Bet.prototype.add_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
+    if (board[widget][client_id]) {
+        board[widget][client_id] = board[widget][client_id] += wager;
+    } else {
+        board[widget][client_id] = wager;
+    }
+    players[client_id]['debit'](wager);
+};
+Bet.prototype.remove_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
+    board[widget][client_id] = board[widget][client_id] -= wager;
+    if (board[widget][client_id] === 0) {
+        delete board[widget][client_id];
+    }
+    players[client_id]['credit'](wager);
+};
 
 function User(client_id, name) {
     this.client_id = client_id;
     this.name = name;
-    this.chip_count = 20;
+    this._chip_count = 20;
     this.bet = new Bet();
 }
-
-Bet.prototype.add_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
-    board[widget][client_id] = wager;
-};
-Bet.prototype.remove_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
-//    board[widget][client_id] = wager;
-};
 User.prototype.credit = function (chips) {
     var credit_amount = chips || 1;
     this.chip_count += credit_amount;
-    this.update_chip_count();
+    this.update_client_chip_count();
 };
 User.prototype.debit = function (chips) {
     var debit_amount = chips || 1;
     this.chip_count -= debit_amount;
-    this.update_chip_count();
+    this.update_client_chip_count();
 };
-User.prototype.update_chip_count = function () {
-    if (this.chip_count) {
-//        broadcast new chip count
-        message_players({
-            new_chip_count: this.chip_count
-        });
-    } else {
-//        broadcast 'ca$hed out!'
-        message_players({
-            new_chip_count: this.chip_count
-        });
-    }
+User.prototype.update_client_chip_count = function () {
+    message.player(this.client_id, {
+        new_chip_count: this._chip_count
+    });
 };
+
+//User.prototype.__defineSetter__('chip_count', function (arguments) {
+//    console.log(arguments);
+//    return this._chip_count = arguments[0];
+//});
+
 
 (function init() {
     board  = new Bet_board;
@@ -284,7 +293,6 @@ setInterval(function () {
     var i, l, widget, winners
         ,   results = spin()
         ,   keys = _.keys(players)
-        ,   arr_of_player_names = generate_active_players_arr()
     ;
 
     betting.close(function () {
@@ -299,39 +307,36 @@ setInterval(function () {
     if (board[results.number]) {    // credit 35
         widget = results.number;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 35);
+        payout(winners, widget, 35);
     }
 
     if (board[results.third]) { // credit 2
         widget = results.third;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 2);
+        payout(winners, widget, 2);
     }
     if (board[results.column]) {    // credit 2
         widget = results.column;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 2);
+        payout(winners, widget, 2);
     }
     if (board[results.half]) {  // credit 1
         widget = results.half;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 1);
+        payout(winners, widget, 1);
     }
     if (board[results.parity]) {  // credit 1
         widget = results.parity;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 1);
+        payout(winners, widget, 1);
     }
     if (board[results.color]) { //  credit 1
         widget = results.color;
         winners = _.keys(board[widget]);
-        payout(keys, winners, widget, 1);
+        payout(winners, widget, 1);
     }
 
-//     } else { 
-//      players[x[i]]['debit'](x);
-
-    socket.broadcast({
+    message.players({
         spin: results
     });
 
@@ -342,9 +347,16 @@ setInterval(function () {
 socket.on('connection', function (client) {
     var user;
 
-    betting.open();
+    if (_.keys(players).length < 1) {
+        betting.open();
+    } else {
+        message.player(client.sessionId, {
+            betting_status: betting.status
+        });
+    }
 
     client.on('message', function (msg) {
+//console.log(msg);
         if (msg.bet && betting.status) {
             user.bet[msg.bet.action](msg.bet.widget, msg.bet.wager, user.client_id);    // add/remove bet
         }
@@ -353,12 +365,9 @@ console.log('nice try');
         }
         if (msg.user_name) {
             user = new User(client.sessionId, msg.user_name);
-            user.update_chip_count();
+            user.update_client_chip_count();
             players[client.sessionId] = user;
             update_players_list();
-            client.send({
-                chip_count: players[client.sessionId]['chip_count']
-            });
         }
     }).on('disconnect', function () {
         delete players[user.client_id];
