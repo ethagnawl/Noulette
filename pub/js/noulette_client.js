@@ -1,18 +1,34 @@
 (function () {
 
-    var betting_status = false
-        ,   clear = {
+    var config = {
+        betting_status: false
+        ,   els: {
+            $layout: $(document.getElementById('layout'))
+            ,   betting_status: document.getElementById('betting_status')
+            ,   wheel: document.getElementById('wheel')
+            ,   results: document.getElementById('results')
+            ,   flash: document.getElementById('flash')
+            ,   players: document.getElementById('players')
+            ,   chip_count: null
+        }
+        ,   classes: {
+            spin: 'spin'
+            ,   chip: 'chip'
+            ,   result: 'result'   
+        }
+    } 
+    ,   clear = {
             flash: function () {
 //                flash('');
             }
             ,   results: function () {
-                $('#layout').find('.result').removeClass('result');
+                    config.els.$layout.find('.' + config.classes.result).removeClass(config.classes.result);
             }
             ,   bets: function () {
-                    $('#layout').find('.chip').removeClass('chip');    
+                    config.els.$layout.find('.' + config.classes.chip).removeClass(config.classes.chip);    
             }
             ,   wheel: function () {
-                    $('#wheel').removeClass('spin');    
+                    config.els.wheel.className = '';
             }
             ,   all: function () {
                     this.flash();
@@ -39,7 +55,7 @@ console.log('updated_chip_count: ' + updated_chip_count);
             var updated_chip_count_msg;
             this.chip_count = updated_chip_count;
             updated_chip_count_msg = this.chip_count > 0 ? this.chip_count : 'ca$hed out!';
-            document.getElementById('chip_count').innerHTML = updated_chip_count_msg;
+            config.els.chip_count.innerHTML = updated_chip_count_msg;
         }
     }
     ,   socket = new io.Socket(null, {
@@ -47,7 +63,7 @@ console.log('updated_chip_count: ' + updated_chip_count);
     });
 
     function flash(msg) {
-        document.getElementById('flash').innerHTML = msg;
+        config.els.flash.innerHTML = msg;
     }
 
     function Bet(action, widget, key) {
@@ -60,22 +76,18 @@ console.log('updated_chip_count: ' + updated_chip_count);
         socket.send(msg);            
     }
 
-    document.getElementById('buy_more_chips').onclick = function () {
-        chips.credit(5);
-    };
-
-    $('#layout').delegate('td', 'click', function () {
+    config.els.$layout.delegate('td', 'click', function () {
         var $this = $(this)
             ,   key = this.id
             ,   val = 1
         ;
-        if (betting_status) {
-            if ($this.hasClass('chip')) {
+        if (config.betting_status) {
+            if ($this.hasClass(config.classes.chip)) {
                 chips.credit(key, val);
-                $this.removeClass('chip');
+                $this.removeClass(config.classes.chip);
             } else if (chips.chip_count) {
                 chips.debit(key, val);                
-                $this.addClass('chip');
+                $this.addClass(config.classes.chip);
             } else {
 console.log('Please purchase additional chips.');        
             }
@@ -89,40 +101,36 @@ console.log('sorry, no more bets.');
 console.log(msg.payout.message);
         }
         if (msg.hasOwnProperty('betting_status')) {
-            betting_status = msg.betting_status ? 'open' : 'closed';
-            document.getElementById('betting_status').innerHTML = betting_status;
-            document.getElementById('betting_status').className = betting_status;
+            config.betting_status = msg.betting_status ? 'open' : 'closed';
+            config.els.betting_status.innerHTML = config.betting_status;
+            config.els.betting_status.className = config.betting_status;
         }
         if (msg.players_arr) {
-            document.getElementById('players').innerHTML = msg.players_arr;
+            config.els.players.innerHTML = msg.players_arr;
         }
         if (msg.new_chip_count) {
             chips.update_chip_count(msg.new_chip_count); 
         }
         if (msg.spin) {
             var li_result = document.createElement('li')
-                ,   el_results = document.getElementById('results')
-                ,   first = el_results.getElementsByTagName('li')[1]
+                ,   first = config.els.results.getElementsByTagName('li')[1]
                 ,   results = msg.spin
-                ,   bets = []
                 ,   winner = false
-                ,   bet
-                ,   l
                 ,   result
             ;
 
-            $('#wheel').addClass('spin');
+            config.els.wheel.className = config.classes.spin;
 
             setTimeout(function () {
                 li_result.innerHTML = results.number + ' ' + results.color + ' ' + results.parity;
 
-                el_results.insertBefore(li_result, first);
+                config.els.results.insertBefore(li_result, first);
 
                 clear.bets();
 
                 for (result in results) {
                     if (results.hasOwnProperty(result)) {
-                        $(document.getElementById(results[result])).addClass('result');
+                        document.getElementById(results[result]).className = document.getElementById(results[result]).className += ' ' + config.classes.result;
                     }
                 }
     
@@ -141,15 +149,17 @@ console.log(msg.payout.message);
     });
 
     (function init() {
+        var chip_count;
         if (chips.user_name) {
+            chip_count = document.createElement('li');
+            chip_count.id = 'chip_count';        
+            chip_count.innerHTML = chips.chip_count;
+            document.getElementById('chips').appendChild(chip_count);
+            config.els.chip_count = document.getElementById('chip_count');
             message_server({
                 user_name: chips.user_name
             });
             document.getElementsByTagName('body')[0].className = '';
-            var chip_count = document.createElement('li');
-            chip_count.id = 'chip_count';        
-            chip_count.innerHTML = chips.chip_count;
-            document.getElementById('chips').appendChild(chip_count);
         }
     }());
         

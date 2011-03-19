@@ -27,7 +27,7 @@ var sys = require('sys')
 var tests = {
     // TODO: add "00" tests
     column_test: function (result) {
-        return layout_config.columns.column_1.indexOf(Number(result)) !== -1 ? 'column_1' : layout_config.columns.column_2.indexOf(Number(result))!== -1 ? 'column_2' : 'column_3';
+        return layout_config.columns.column_1.indexOf(Number(result)) !== -1 ? 'column_1' : layout_config.columns.column_2.indexOf(Number(result)) !== -1 ? 'column_2' : 'column_3';
     },
     which_third_test: function (result) {
         return Number(result) < 13 ? '1_12' : Number(result) < 25 ? '13_24' : '25_36';        
@@ -120,7 +120,7 @@ function update_players_list() {
     ;
 
     message.players({
-        'players_arr': players_partial
+        players_arr: players_partial
     });        
 }
 
@@ -136,7 +136,7 @@ Bet.prototype.add_bet = function (widget, wager, client_id) {   // shouldn't the
 };
 Bet.prototype.remove_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
     board[widget][client_id] = board[widget][client_id] -= wager;
-    if (board[widget][client_id] === 0) {
+    if (board[widget][client_id] <= 0) {
         delete board[widget][client_id];
     }
     players[client_id]['credit'](wager);
@@ -178,13 +178,11 @@ function derp() {
     //    });
 
         for (result in results) {
-            if (results.hasOwnProperty(result)) {
-                if (board[results[result]]) {
-                    bet_pays = payouts[result];
-                    widget = results[result];
-                    winners = _.keys(board[widget]);
-                    payout(winners, widget, bet_pays);
-                }
+            if (results.hasOwnProperty(result) && board[results[result]]) {
+                bet_pays = payouts[result];
+                widget = results[result];
+                winners = _.keys(board[widget]);
+                payout(winners, widget, bet_pays);
             }
         }
 
@@ -222,7 +220,6 @@ socket.on('connection', function (client) {
     }
 
     client.on('message', function (msg) {
-//console.log(msg);
         if (msg.bet && betting.status) {
             user.bet[msg.bet.action](msg.bet.widget, msg.bet.wager, client_id);    // add/remove bet
         }
@@ -235,6 +232,9 @@ socket.on('connection', function (client) {
     }).on('disconnect', function () {
         delete players[client_id];
         update_players_list();
+        if (_.isEmpty(players)) {
+            game_is_active = false;
+        }
     });
 });
 
