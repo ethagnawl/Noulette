@@ -3,14 +3,23 @@
     var betting_status = false
         ,   clear = {
             flash: function () {
-                flash('');
-            }
-            ,   bets: function () {
-                $('#layout').find('.chip').removeClass('chip');    
+//                flash('');
             }
             ,   results: function () {
                 $('#layout').find('.result').removeClass('result');
-            }    
+            }
+            ,   bets: function () {
+                    $('#layout').find('.chip').removeClass('chip');    
+            }
+            ,   wheel: function () {
+                    $('#wheel').removeClass('spin');    
+            }
+            ,   all: function () {
+                    this.flash();
+                    this.results();
+                    this.bets();
+                    this.wheel();            
+            }
     }
     ,   chips = {
             user_name: prompt('hey there! what\'s your name?')
@@ -80,7 +89,9 @@ console.log('sorry, no more bets.');
 console.log(msg.payout.message);
         }
         if (msg.hasOwnProperty('betting_status')) {
-            betting_status = msg.betting_status;                    
+            betting_status = msg.betting_status ? 'open' : 'closed';
+            document.getElementById('betting_status').innerHTML = betting_status;
+            document.getElementById('betting_status').className = betting_status;
         }
         if (msg.players_arr) {
             document.getElementById('players').innerHTML = msg.players_arr;
@@ -89,43 +100,43 @@ console.log(msg.payout.message);
             chips.update_chip_count(msg.new_chip_count); 
         }
         if (msg.spin) {
-            var results = msg.spin;
-            clear.flash();
-            $('.result').removeClass('result');
-            $('#wheel').addClass('spin');
-            setTimeout(function () {
-                var li_result = document.createElement('li')
-                    ,   el_results = document.getElementById('results')
-                    ,   first = el_results.getElementsByTagName('li')[1]
-                    ,   bets = []
-                    ,   winner = false
-                    ,   bet
-                    ,   l
-                    ,   result
-                ;
+            var li_result = document.createElement('li')
+                ,   el_results = document.getElementById('results')
+                ,   first = el_results.getElementsByTagName('li')[1]
+                ,   results = msg.spin
+                ,   bets = []
+                ,   winner = false
+                ,   bet
+                ,   l
+                ,   result
+            ;
 
+            $('#wheel').addClass('spin');
+
+            setTimeout(function () {
                 li_result.innerHTML = results.number + ' ' + results.color + ' ' + results.parity;
 
                 el_results.insertBefore(li_result, first);
 
-               if (winner) {
-                   flash();
-                }
-
-                clear.bets();            
+                clear.bets();
 
                 for (result in results) {
                     if (results.hasOwnProperty(result)) {
                         $(document.getElementById(results[result])).addClass('result');
                     }
                 }
+    
+//                if (winner) {
+//                   flash();
+//                }            
+                    
+                 setTimeout(function () {
+                    clear.all();                 
+                 }, 4000);
+    
+            }, 4000);
 
-                setTimeout(function () {
-                    $('#wheel').removeClass('spin');
-                    clear.results();
-                }, 4000);
- 
-            }, 2000);
+
         }
     });
 

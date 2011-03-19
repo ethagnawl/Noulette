@@ -27,7 +27,7 @@ body { margin:0 auto; width:1024px; }
 }
 table { margin:0 auto; }
 #main_table {
-    moz-transform: rotate(-90deg);
+    -moz-transform: rotate(-90deg);
     -o-transform: rotate(-90deg);
     -webkit-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
@@ -38,8 +38,10 @@ table { margin:0 auto; }
 td { border:2px solid #fff; color:#fff; cursor:pointer; position:relative; text-align:center; }
 .yellow { color:rgba(255, 255, 0, .8); }
 .green { background-color:rgba(90, 160, 100, .8); }
+.open { color:rgba(90, 160, 100, .8); }
 .black { background-color:black; }
 .red { background-color:red; }
+.closed { color:rgba(255, 0, 0, .8); }
 .chip { border-color:black; }
 .result { border-color:rgba(255, 128, 64, .8); }
 
