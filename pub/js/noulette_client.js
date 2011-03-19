@@ -95,6 +95,8 @@ console.log(msg.payout.message);
             $('#wheel').addClass('spin');
             setTimeout(function () {
                 var li_result = document.createElement('li')
+                    ,   el_results = document.getElementById('results')
+                    ,   first = el_results.getElementsByTagName('li')[1]
                     ,   bets = []
                     ,   winner = false
                     ,   bet
@@ -103,7 +105,8 @@ console.log(msg.payout.message);
                 ;
 
                 li_result.innerHTML = results.number + ' ' + results.color + ' ' + results.parity;
-                document.getElementById('results').appendChild(li_result);
+
+                el_results.insertBefore(li_result, first);
 
                if (winner) {
                    flash();

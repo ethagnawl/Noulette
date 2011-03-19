@@ -5,7 +5,7 @@ body { margin:0 auto; width:1024px; }
 .fl-left { float:left; }
 .fifty { width:50%; }
 
-#layout { background-color:#5aa064; position:relative; }
+#layout { background-color:rgba(90, 160, 100, .8); position:relative; }
 #wheel {
     background:url(/pub/img/wheel.png) no-repeat 0 0 transparent;
     -webkit-background-size: 100px;
@@ -36,9 +36,11 @@ table { margin:0 auto; }
 #three_wide { left:181px; position:absolute; top:238px; }
 #six_wide { left:136px; position:absolute; top:265px; }
 td { border:2px solid #fff; color:#fff; cursor:pointer; position:relative; text-align:center; }
-.yellow { color:yellow; }
-.green { background-color:green; }
+.yellow { color:rgba(255, 255, 0, .8); }
+.green { background-color:rgba(90, 160, 100, .8); }
 .black { background-color:black; }
 .red { background-color:red; }
 .chip { border-color:black; }
-.result { border-color:orange; }
+.result { border-color:rgba(255, 128, 64, .8); }
+
+#results { height:245px; overflow:auto; width:140px; }
