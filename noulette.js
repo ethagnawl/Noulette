@@ -18,9 +18,9 @@ var sys = require('sys')
             third: 2,
             number: 35
     }
-    ,   players = {}
     ,   seconds_between_spins = 10000
     ,   game_is_active = false
+    ,   players = {}
     ,   board
 ;
 
@@ -30,13 +30,10 @@ var tests = {
         return layout_config.columns.column_1.indexOf(Number(result)) !== -1 ? 'column_1' : layout_config.columns.column_2.indexOf(Number(result)) !== -1 ? 'column_2' : 'column_3';
     },
     which_third_test: function (result) {
-        return Number(result) < 13 ? '1_12' : Number(result) < 25 ? '13_24' : '25_36';        
+        return result === 'first' ? '1_12' : result === 'second' ? '13_24' : '25_36';
     },
     which_half_test: function (result) {
-        return Number(result) < 19 ? '1_18' : '19_36';
-    },
-    parity_test: function (result) {
-        return result === 'even' ? true : result === 'odd' ? true : 'something went wrong...';
+        return result === 'first' ? '1_18' : '19_36';
     }
 },
 message = {
@@ -49,17 +46,21 @@ message = {
 },
 betting = {
     status: false,
-    open: function () {
-        this.status = true;
+    switch_status: function () {
+        this.status = !this.status;
+    },
+    send_status: function () {
         message.players({
             betting_status: this.status
-        });        
+        });            
     },
-    close: function (callback) {
-        this.status = false;
-        message.players({
-            betting_status: betting.status
-        });        
+    open: function () { // merge into .toggle_status()
+        this.switch_status();
+        this.send_status();
+    },
+    close: function (callback) { // merge into .toggle_status()
+        this.switch_status();
+        this.send_status();
         callback();
     }
 };
@@ -78,8 +79,8 @@ function spin() {
             number: result.toString()
             ,   color: layout_config.numbers[result]['color']
             ,   parity: layout_config.numbers[result]['parity']
-            ,   third: tests.which_third_test(result)
-            ,   half: tests.which_half_test(result)
+            ,   third: tests.which_third_test(layout_config.numbers[result]['third'])
+            ,   half: tests.which_half_test(layout_config.numbers[result]['half'])
             ,   column: tests.column_test(result)
         }
     ;
@@ -96,17 +97,21 @@ function generate_active_players_arr() {
     return players_arr;
 }
 
-function payout(winners, widget, winnings) {
+function Payout(message, chips) {
+    this.payout = {
+        message: message,
+        chips: chips
+    };
+}
+
+function payout(winners, widget, winnings) { // widget needs a more descriptive name
     var winner, id, name, l;
     for (winner = 0, l = winners.length; winner < l; winner += 1) {
         name = players[winners[winner]]['name'];
         id = players[winners[winner]]['client_id'];
-        message.player(id, {
-            payout: {
-                message: 'congrats, ' + name + ' you\'ve won ' + winnings + ' betting on ' + widget,
-                chips: winnings
-            }
-        });
+        message.player(id,
+            new Payout('congrats, ' + name + ' you\'ve won ' + winnings + ' betting on ' + widget, winnings)
+        );
         players[winners[winner]]['credit'](winnings);
     }
 }
@@ -126,15 +131,11 @@ function update_players_list() {
 
 function Bet() {}
 
-Bet.prototype.add_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
-    if (board[widget][client_id]) {
-        board[widget][client_id] = board[widget][client_id] += wager;
-    } else {
-        board[widget][client_id] = wager;
-    }
+Bet.prototype.add_bet = function (widget, wager, client_id) {
+    board[widget][client_id] = board[widget][client_id] ? board[widget][client_id] += wager : wager;
     players[client_id]['debit'](wager);
 };
-Bet.prototype.remove_bet = function (widget, wager, client_id) {   // shouldn't these have access to client_id?
+Bet.prototype.remove_bet = function (widget, wager, client_id) {
     board[widget][client_id] = board[widget][client_id] -= wager;
     if (board[widget][client_id] <= 0) {
         delete board[widget][client_id];
@@ -166,40 +167,37 @@ User.prototype.update_client_chip_count = function () {
 
 function derp() {
     if (game_is_active) {
-        var i, l, widget, winners, bet_pays, result
+        var bet_pays, widget, winners, result
             ,   results = spin()
-            ,   keys = _.keys(players)
         ;
 
-    //    betting.close(function () {
-    //        setTimeout(function () {
-    //            betting.open();
-    //        }, 10000);
-    //    });
-
-        for (result in results) {
-            if (results.hasOwnProperty(result) && board[results[result]]) {
-                bet_pays = payouts[result];
-                widget = results[result];
-                winners = _.keys(board[widget]);
-                payout(winners, widget, bet_pays);
+        betting.close(function () {
+            for (result in results) {
+                if (results.hasOwnProperty(result) && board[results[result]]) {
+                    bet_pays = payouts[result];
+                    widget = results[result];
+                    winners = _.keys(board[widget]);
+                    payout(winners, widget, bet_pays);
+                }
             }
-        }
+            message.players({
+                spin: results
+            });
 
-        message.players({
-            spin: results
+            setTimeout(function () {
+                board  = new Bet_board();
+                betting.open();
+                derp();
+            }, seconds_between_spins);
+
         });
-
-        board  = new Bet_board();
     }
 }
 
 function init() {
-    board  = new Bet_board();
-    setInterval(function () {
-        derp();
-    }, seconds_between_spins);
     game_is_active = true;
+    board  = new Bet_board();
+    derp();
 }
 
 socket.on('connection', function (client) {
