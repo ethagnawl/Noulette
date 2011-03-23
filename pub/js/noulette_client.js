@@ -3,20 +3,21 @@
     var config = {
         betting_status: false
         ,   els: {
-            $layout: $(document.getElementById('layout'))
+            $layout:            $(document.getElementById('layout'))
             ,   betting_status: document.getElementById('betting_status')
-            ,   wheel: document.getElementById('wheel')
-            ,   results: document.getElementById('results')
-            ,   flash: document.getElementById('flash')
-            ,   players: document.getElementById('players')
-            ,   chip_count: null
+            ,   chip_count:     document.getElementById('chip_count')
+            ,   el_chips:       document.getElementById('chips')
+            ,   flash:          document.getElementById('flash')
+            ,   players:        document.getElementById('players')
+            ,   results:        document.getElementById('results')
+            ,   wheel:          document.getElementById('wheel')
         }
         ,   classes: {
             spin: 'spin'
             ,   chip: 'chip'
             ,   result: 'result'   
         }
-    } 
+    }
     ,   clear = {
             flash: function () {
 //                flash('');
@@ -38,29 +39,32 @@
             }
     }
     ,   chips = {
-            user_name: prompt('hey there! what\'s your name?')
+            user_name: localStorage.getItem('user_name') ? localStorage.getItem('user_name') : prompt('hey there! what\'s your name?')
         ,   chip_count: 0
-        ,   debit: function (key, val) {
-            message_server({
-                bet: new Bet('add_bet', key, val)
-            });        
-        }
-        ,   credit: function (key, val) {
-            message_server({
-                bet: new Bet('remove_bet', key, val)
-            });        
+        ,   augment_bet: function (action, key, val) {
+                message_server({
+                    bet: new Bet(action, key, val)
+                });                    
         }
         ,   update_chip_count: function (updated_chip_count) {
 console.log('updated_chip_count: ' + updated_chip_count);
-            var updated_chip_count_msg;
             this.chip_count = updated_chip_count;
-            updated_chip_count_msg = this.chip_count > 0 ? this.chip_count : 'ca$hed out!';
-            config.els.chip_count.innerHTML = updated_chip_count_msg;
+            config.els.chip_count.innerHTML = this.chip_count > 0 ? this.chip_count : 'ca$hed out!';
         }
     }
     ,   socket = new io.Socket(null, {
         port: 8000
     });
+
+//    (function user_name() {
+//        var user_exists = localStorage.getItem('user_name');
+//        if (user_exists) {
+//            chips.user_name = user_exists;
+//        } else {
+//            chips.user_name = prompt('hey there! what\'s your name?'); // TODO: <---
+//            localStorage.setItem('user_name', chips.user_name);
+//        }        
+//    }());
 
     function flash(msg) {
         config.els.flash.innerHTML = msg;
@@ -76,17 +80,21 @@ console.log('updated_chip_count: ' + updated_chip_count);
         socket.send(msg);            
     }
 
+    function update_players_list(players_list) {
+        config.els.players.innerHTML = players_list;    
+    }
+
     config.els.$layout.delegate('td', 'click', function () {
-        var $this = $(this)
-            ,   key = this.id
-            ,   val = 1
-        ;
         if (config.betting_status) {
+            var $this = $(this)
+                ,   key = this.id
+                ,   val = 1
+            ;
             if ($this.hasClass(config.classes.chip)) {
-                chips.credit(key, val);
+                chips.augment_bet('remove_bet', key, val);                
                 $this.removeClass(config.classes.chip);
             } else if (chips.chip_count) {
-                chips.debit(key, val);                
+                chips.augment_bet('add_bet', key, val);                
                 $this.addClass(config.classes.chip);
             } else {
 console.log('Please purchase additional chips.');        
@@ -104,9 +112,12 @@ console.log(msg.payout.message);
             config.betting_status = msg.betting_status ? 'open' : 'closed';
             config.els.betting_status.innerHTML = config.betting_status;
             config.els.betting_status.className = config.betting_status;
+            if (config.betting_status === 'open') {
+                clear.all();
+            }
         }
         if (msg.players_arr) {
-            config.els.players.innerHTML = msg.players_arr;
+            update_players_list(msg.players_arr);
         }
         if (msg.new_chip_count) {
             chips.update_chip_count(msg.new_chip_count); 
@@ -115,13 +126,12 @@ console.log(msg.payout.message);
             var li_result = document.createElement('li')
                 ,   first = config.els.results.getElementsByTagName('li')[1]
                 ,   results = msg.spin
-                ,   winner = false
                 ,   result
             ;
 
             config.els.wheel.className = config.classes.spin;
 
-            setTimeout(function () {
+//            setTimeout(function () {
                 li_result.innerHTML = results.number + ' ' + results.color + ' ' + results.parity;
 
                 config.els.results.insertBefore(li_result, first);
@@ -133,34 +143,15 @@ console.log(msg.payout.message);
                         document.getElementById(results[result]).className = document.getElementById(results[result]).className += ' ' + config.classes.result;
                     }
                 }
-    
-//                if (winner) {
-//                   flash();
-//                }            
-                    
-                 setTimeout(function () {
-                    clear.all();                 
-                 }, 4000);
-    
-            }, 4000);
-
-
+//            }, 4000);
         }
     });
 
     (function init() {
-        var chip_count;
         if (chips.user_name) {
-            chip_count = document.createElement('li');
-            chip_count.id = 'chip_count';        
-            chip_count.innerHTML = chips.chip_count;
-            document.getElementById('chips').appendChild(chip_count);
-            config.els.chip_count = document.getElementById('chip_count');
             message_server({
                 user_name: chips.user_name
             });
-            document.getElementsByTagName('body')[0].className = '';
         }
     }());
-        
 }());
