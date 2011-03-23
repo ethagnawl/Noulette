@@ -86,8 +86,19 @@ console.log('updated_chip_count: ' + updated_chip_count);
     function update_players_list(players_list) {
         config.els.players.innerHTML = players_list;    
     }
+    
+    function update_betting_status(betting_status) {
+        config.betting_status = betting_status;
+        var betting_state = betting_status === true ? 'open' : 'closed'
+        config.els.betting_status.innerHTML = betting_state;
+        config.els.betting_status.className = betting_state;
+        if (betting_state === 'open') {
+            clear.all();
+        }    
+    }
 
     config.els.$layout.delegate('td', 'click', function () {
+console.log(config.betting_status);
         if (config.betting_status) {
             var $this = $(this)
                 ,   key = this.id
@@ -112,13 +123,7 @@ console.log('sorry, no more bets.');
 console.log(msg.payout.message);
         }
         if (msg.hasOwnProperty('betting_status')) {
-            config.betting_status = msg.betting_status;
-            var betting_state = config.betting_status === true ? 'open' : 'closed'
-            config.els.betting_status.innerHTML = betting_state;
-            config.els.betting_status.className = betting_state;
-            if (betting_state === 'open') {
-                clear.all();
-            }
+            update_betting_status(msg.betting_status);
         }
         if (msg.players_arr) {
             update_players_list(msg.players_arr);
