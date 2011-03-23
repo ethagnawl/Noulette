@@ -2,15 +2,16 @@
 
     var config = {
         betting_status: false
+        ,   port: 8000
         ,   els: {
-            $layout:            $(document.getElementById('layout'))
+            $layout: $(document.getElementById('layout'))
             ,   betting_status: document.getElementById('betting_status')
-            ,   chip_count:     document.getElementById('chip_count')
-            ,   el_chips:       document.getElementById('chips')
-            ,   flash:          document.getElementById('flash')
-            ,   players:        document.getElementById('players')
-            ,   results:        document.getElementById('results')
-            ,   wheel:          document.getElementById('wheel')
+            ,   chip_count: document.getElementById('chip_count')
+            ,   el_chips: document.getElementById('chips')
+            ,   flash: document.getElementById('flash')
+            ,   players: document.getElementById('players')
+            ,   results: document.getElementById('results')
+            ,   wheel: document.getElementById('wheel')
         }
         ,   classes: {
             spin: 'spin'
@@ -39,9 +40,8 @@
             }
     }
     ,   chips = {
-            user_name: localStorage.getItem('user_name') ? localStorage.getItem('user_name') : prompt('hey there! what\'s your name?')
-        ,   chip_count: 0
-        ,   augment_bet: function (action, key, val) {
+            chip_count: 0
+        ,   augment_chip_count: function (action, key, val) {
                 message_server({
                     bet: new Bet(action, key, val)
                 });                    
@@ -53,18 +53,21 @@ console.log('updated_chip_count: ' + updated_chip_count);
         }
     }
     ,   socket = new io.Socket(null, {
-        port: 8000
+        port: config.port
     });
 
-//    (function user_name() {
-//        var user_exists = localStorage.getItem('user_name');
-//        if (user_exists) {
-//            chips.user_name = user_exists;
-//        } else {
-//            chips.user_name = prompt('hey there! what\'s your name?'); // TODO: <---
-//            localStorage.setItem('user_name', chips.user_name);
-//        }        
-//    }());
+    chips.user_name = get_user_name();
+
+    function get_user_name() {
+        var new_user, user_exists = localStorage.getItem('user_name');
+        if (user_exists) {
+            return user_exists;
+        } else {
+            new_user = prompt('hey there! what\'s your name?')
+            localStorage.setItem('user_name', new_user);
+            return new_user;
+        }        
+    }
 
     function flash(msg) {
         config.els.flash.innerHTML = msg;
@@ -91,10 +94,10 @@ console.log('updated_chip_count: ' + updated_chip_count);
                 ,   val = 1
             ;
             if ($this.hasClass(config.classes.chip)) {
-                chips.augment_bet('remove_bet', key, val);                
+                chips.augment_chip_count('remove_bet', key, val);                
                 $this.removeClass(config.classes.chip);
             } else if (chips.chip_count) {
-                chips.augment_bet('add_bet', key, val);                
+                chips.augment_chip_count('add_bet', key, val);                
                 $this.addClass(config.classes.chip);
             } else {
 console.log('Please purchase additional chips.');        
@@ -109,10 +112,11 @@ console.log('sorry, no more bets.');
 console.log(msg.payout.message);
         }
         if (msg.hasOwnProperty('betting_status')) {
-            config.betting_status = msg.betting_status ? 'open' : 'closed';
-            config.els.betting_status.innerHTML = config.betting_status;
-            config.els.betting_status.className = config.betting_status;
-            if (config.betting_status === 'open') {
+            config.betting_status = msg.betting_status;
+            var betting_state = config.betting_status === true ? 'open' : 'closed'
+            config.els.betting_status.innerHTML = betting_state;
+            config.els.betting_status.className = betting_state;
+            if (betting_state === 'open') {
                 clear.all();
             }
         }
@@ -152,6 +156,7 @@ console.log(msg.payout.message);
             message_server({
                 user_name: chips.user_name
             });
+            document.getElementsByTagName('body')[0].className = '';
         }
     }());
 }());
