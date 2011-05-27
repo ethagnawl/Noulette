@@ -41,7 +41,7 @@ message = {
         socket.clients[id]['send'](msg);
     },
     players: function (msg) {
-        socket.broadcast(msg);            
+        socket.broadcast(msg);
     }
 },
 betting = {
@@ -52,7 +52,7 @@ betting = {
     send_status: function () {
         message.players({
             betting_status: this.status
-        });            
+        });
     },
     open: function () { // merge into .toggle_status()
         this.switch_status();
@@ -126,7 +126,7 @@ function update_players_list() {
 
     message.players({
         players_arr: players_partial
-    });        
+    });
 }
 
 function Bet() {}
@@ -165,7 +165,7 @@ User.prototype.update_client_chip_count = function () {
     });
 };
 
-function derp() {
+function derp() { // TODO: this guy needs a proper name...
     if (game_is_active) {
         var bet_pays, widget, winners, result
             ,   results = spin()
@@ -236,8 +236,8 @@ socket.on('connection', function (client) {
     });
 });
 
-app.get('/*.(js|css|png)', function(req, res) {
-    res.sendfile("/var/www/roulette" + req.url);
+app.get('/*.(js|css|png)', function (req, res) {
+    res.sendfile("./" + req.url);
 }).get('/', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(Mustache.to_html(html_template, view));
