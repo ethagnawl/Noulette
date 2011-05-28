@@ -13,6 +13,7 @@ body { margin:0 auto; width:1024px; }
     -webkit-background-size: 100px;
     -moz-background-size: 100px;
     -o-background-size: 100px;
+    background-size: 100px;
     height:100px;
     width:100px;
     position:absolute;
@@ -33,17 +34,37 @@ table { margin:0 auto; }
     -o-transform: rotate(-90deg);
     -webkit-transform: rotate(-90deg);
     -ms-transform: rotate(-90deg);
-    transform: rotate(-90deg);  
+    transform: rotate(-90deg);
 }
 #three_wide { left:181px; position:absolute; top:238px; }
 #six_wide { left:136px; position:absolute; top:265px; }
-td { border:2px solid #fff; color:#fff; cursor:pointer; position:relative; text-align:center; }
+td {
+    -moz-transition: all 0.1s ease-out;  /* FF4+ */
+    -o-transition: all 0.1s ease-out;  /* Opera 10.5+ */
+    -webkit-transition: all 0.1s ease-out;  /* Saf3.2+, Chrome */
+    -ms-transition: all 0.1s ease-out;  /* IE10? */
+    transition: all 0.1s ease-out;
+    border:2px solid #fff;
+    color:#fff;
+    cursor:pointer;
+    position:relative;
+    text-align:center;
+}
+
+#betting_status {
+    -moz-transition: all 0.1s ease-out;  /* FF4+ */
+    -o-transition: all 0.1s ease-out;  /* Opera 10.5+ */
+    -webkit-transition: all 0.1s ease-out;  /* Saf3.2+, Chrome */
+    -ms-transition: all 0.1s ease-out;  /* IE10? */
+    transition: all 0.1s ease-out;
+}
+.open { color:rgba(90, 160, 100, .8); }
+.closed { color:rgba(255, 0, 0, .8); }
+
 .yellow { color:rgba(255, 255, 0, .8); }
 .green { background-color:rgba(90, 160, 100, .8); }
-.open { color:rgba(90, 160, 100, .8); }
 .black { background-color:black; }
 .red { background-color:red; }
-.closed { color:rgba(255, 0, 0, .8); }
 .chip { border-color:black; }
 .result { border-color:rgba(255, 128, 64, .8); }
 
