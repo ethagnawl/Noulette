@@ -8,7 +8,7 @@ var sys = require('sys')
     ,   html_template = fs.readFileSync('noulette.html', 'utf8')
     ,   layout_config = JSON.parse(fs.readFileSync('./pub/js/layout_config.js', 'utf8'))
     ,   view = {
-        title: "Noulette"
+        title: 'Noulette'
     }
     ,   payouts = {
             color: 1,
@@ -69,9 +69,18 @@ function seconds(secs) {
     return secs * 1000;
 }
 
-function Bet_board() {  // this name sucks
-    return JSON.parse(fs.readFileSync('./pub/js/board.js', 'utf8'));
-}
+var Bet_board = (function () {
+    var board;
+    fs.readFile('./pub/js/board.js', 'utf8', function (err, data) {
+        if (err) {
+            throw err;
+        }
+        board = JSON.parse(data);
+    });
+    return function Bet_board() {
+        return board;
+    }
+});
 
 function random(arr) {
     return Math.floor(Math.random() * arr.length);
