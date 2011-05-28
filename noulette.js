@@ -116,18 +116,25 @@ function payout(winners, widget, winnings) { // widget needs a more descriptive 
     }
 }
 
-function update_players_list() {
-    var view = {
-        players: generate_active_players_arr()
+var update_players_list = (function () {
+    var template = '{{#players}}<li>{{.}}</li>{{/players}}';
+    function View() {
+        this.view = {
+            players: generate_active_players_arr()
+        };
+        this.template = template;
     }
-        ,   template = '{{#players}}<li>{{.}}</li>{{/players}}'
-        ,   players_partial = Mustache.to_html(template, view)
-    ;
 
-    message.players({
-        players_arr: players_partial
-    });
-}
+    return function update_players_list() {
+        var players = new View()
+            , players_partial = Mustache.to_html(players.template, players.view)
+        ;
+
+        message.players({
+            players_arr: players_partial
+        });
+    }
+}());
 
 function Bet() {}
 
@@ -167,30 +174,30 @@ User.prototype.update_client_chip_count = function () {
 
 function derp() { // TODO: this guy needs a proper name...
     if (game_is_active) {
-        var bet_pays, widget, winners, result
-            ,   results = spin()
-        ;
+//        var bet_pays, widget, winners, result
+//            ,   results = spin()
+//        ;
 
-        betting.close(function () {
-            for (result in results) {
-                if (results.hasOwnProperty(result) && board[results[result]]) {
-                    bet_pays = payouts[result];
-                    widget = results[result];
-                    winners = _.keys(board[widget]);
-                    payout(winners, widget, bet_pays);
-                }
-            }
-            message.players({
-                spin: results
-            });
+//        betting.close(function () {
+//            for (result in results) {
+//                if (results.hasOwnProperty(result) && board[results[result]]) {
+//                    bet_pays = payouts[result];
+//                    widget = results[result];
+//                    winners = _.keys(board[widget]);
+//                    payout(winners, widget, bet_pays);
+//                }
+//            }
+//            message.players({
+//                spin: results
+//            });
 
-            setTimeout(function () {
-                board  = new Bet_board();
-                betting.open();
-                derp();
-            }, seconds_between_spins);
+//            setTimeout(function () {
+//                board  = new Bet_board();
+//                betting.open();
+//                derp();
+//            }, seconds_between_spins);
 
-        });
+//        });
     }
 }
 
