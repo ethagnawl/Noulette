@@ -18,7 +18,7 @@ var sys = require('sys')
             third: 2,
             number: 35
     }
-    ,   seconds_between_spins = 10000
+    ,   seconds_between_spins = seconds(10)
     ,   game_is_active = false
     ,   players = {}
     ,   board
@@ -64,6 +64,10 @@ betting = {
         callback();
     }
 };
+
+function seconds(secs) {
+    return secs * 1000;
+}
 
 function Bet_board() {  // this name sucks
     return JSON.parse(fs.readFileSync('./pub/js/board.js', 'utf8'));
@@ -174,30 +178,39 @@ User.prototype.update_client_chip_count = function () {
 
 function derp() { // TODO: this guy needs a proper name...
     if (game_is_active) {
-//        var bet_pays, widget, winners, result
-//            ,   results = spin()
-//        ;
+        var bet_pays, widget, winners, result
+            ,   results = spin()
+        ;
 
-//        betting.close(function () {
-//            for (result in results) {
-//                if (results.hasOwnProperty(result) && board[results[result]]) {
-//                    bet_pays = payouts[result];
-//                    widget = results[result];
-//                    winners = _.keys(board[widget]);
-//                    payout(winners, widget, bet_pays);
-//                }
-//            }
-//            message.players({
-//                spin: results
-//            });
+        setTimeout(function () {
+            betting.close(function () {
+                for (result in results) {
+                    if (results.hasOwnProperty(result) && board[results[result]]) {
+                        bet_pays = payouts[result];
+                        widget = results[result];
+                        winners = _.keys(board[widget]);
+                        payout(winners, widget, bet_pays);
+                    }
+                }
 
-//            setTimeout(function () {
-//                board  = new Bet_board();
-//                betting.open();
-//                derp();
-//            }, seconds_between_spins);
+                message.players({
+                    spin_results: results
+                });
 
-//        });
+                setTimeout(function () {
+                    board  = new Bet_board();
+                    betting.open();
+                    derp();
+                }, seconds_between_spins);
+
+            });
+        }, seconds_between_spins);
+
+        setTimeout(function () {
+            message.players({
+                spin: true
+            });
+        }, seconds(8));
     }
 }
 
