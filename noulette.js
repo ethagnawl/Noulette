@@ -70,7 +70,6 @@ function seconds(secs) {
 }
 
 var Bet_board = (function () {
-    var board;
     fs.readFile('./pub/js/board.js', 'utf8', function (err, data) {
         if (err) {
             throw err;
@@ -193,6 +192,10 @@ function derp() { // TODO: this guy needs a proper name...
 
         setTimeout(function () {
             betting.close(function () {
+                message.players({
+                    spin_results: results
+                });
+
                 for (result in results) {
                     if (results.hasOwnProperty(result) && board[results[result]]) {
                         bet_pays = payouts[result];
@@ -202,9 +205,6 @@ function derp() { // TODO: this guy needs a proper name...
                     }
                 }
 
-                message.players({
-                    spin_results: results
-                });
 
                 setTimeout(function () {
                     board  = new Bet_board();
@@ -227,6 +227,11 @@ function init() {
     game_is_active = true;
     board  = new Bet_board();
     derp();
+}
+
+function disconnect(player) {
+    delete players[player];
+    update_players_list();
 }
 
 socket.on('connection', function (client) {
@@ -257,16 +262,12 @@ socket.on('connection', function (client) {
             update_players_list();
         }
     }).on('disconnect', function () {
-        delete players[client_id];
-        update_players_list();
-        if (_.isEmpty(players)) {
-            game_is_active = false;
-        }
+        disconnect(client_id);
     });
 });
 
 app.get('/*.(js|css|png)', function (req, res) {
-    res.sendfile("./" + req.url);
+    res.sendfile('./' + req.url);
 }).get('/', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(Mustache.to_html(html_template, view));
