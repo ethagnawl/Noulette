@@ -5,11 +5,14 @@ var sys = require('sys')
     ,   socket = require('socket.io').listen(app)
     ,   Mustache = require('mustache')
     ,   _ = require('underscore')
-    ,   html_template = fs.readFileSync('noulette.html', 'utf8')
     ,   layout_config = JSON.parse(fs.readFileSync('./pub/js/layout_config.js', 'utf8'))
+
+    ,   html_template = fs.readFileSync('noulette.html', 'utf8')
     ,   view = {
         title: 'Noulette'
     }
+    ,   noulette_html = Mustache.to_html(html_template, view)
+
     ,   payouts = {
             color: 1,
             half: 1,
@@ -19,7 +22,8 @@ var sys = require('sys')
             number: 35
     }
     ,   seconds_between_spins = seconds(10)
-    ,   game_is_active = false
+    ,   starting_chip_count = 20
+    ,   single_credit = 1
     ,   players = {}
     ,   board
 ;
@@ -165,16 +169,16 @@ Bet.prototype.remove_bet = function (widget, wager, client_id) {
 function User(client_id, name) {
     this.client_id = client_id;
     this.name = name;
-    this.chip_count = 20;
+    this.chip_count = starting_chip_count;
     this.bet = new Bet();
 }
 User.prototype.credit = function (wager) {
-    var credit_amount = wager || 1;
+    var credit_amount = wager || single_credit;
     this.chip_count += credit_amount;
     this.update_client_chip_count();
 };
 User.prototype.debit = function (wager) {
-    var debit_amount = wager || 1;
+    var debit_amount = wager || single_credit;
     this.chip_count -= debit_amount;
     this.update_client_chip_count();
 };
@@ -185,49 +189,45 @@ User.prototype.update_client_chip_count = function () {
 };
 
 function derp() { // TODO: this guy needs a proper name...
-    if (game_is_active) {
-        var bet_pays, widget, winners, result
-            ,   results = spin()
-        ;
+    var bet_pays, widget, winners, result
+        ,   results = spin()
+    ;
 
-        setTimeout(function () {
-            betting.close(function () {
-                message.players({
-                    spin_results: results
-                });
-
-                for (result in results) {
-                    if (results.hasOwnProperty(result) && board[results[result]]) {
-                        bet_pays = payouts[result];
-                        widget = results[result];
-                        winners = _.keys(board[widget]);
-                        payout(winners, widget, bet_pays);
-                    }
-                }
-
-
-                setTimeout(function () {
-                    board  = new Bet_board();
-                    betting.open();
-                    derp();
-                }, seconds_between_spins);
-
-            });
-        }, seconds_between_spins);
-
-        setTimeout(function () {
+    setTimeout(function () {
+        betting.close(function () {
             message.players({
-                spin: true
+                spin_results: results
             });
-        }, seconds(8));
-    }
+
+            for (result in results) {
+                if (results.hasOwnProperty(result) && board[results[result]]) {
+                    bet_pays = payouts[result];
+                    widget = results[result];
+                    winners = _.keys(board[widget]);
+                    payout(winners, widget, bet_pays);
+                }
+            }
+
+            setTimeout(function () {
+                board  = new Bet_board();
+                betting.open();
+                derp();
+            }, seconds_between_spins);
+
+        });
+    }, seconds_between_spins);
+
+    setTimeout(function () {
+        message.players({
+            spin: true
+        });
+    }, seconds(8));
 }
 
-function init() {
-    game_is_active = true;
+(function init() {
     board  = new Bet_board();
     derp();
-}
+}());
 
 function disconnect(player) {
     delete players[player];
@@ -238,10 +238,6 @@ socket.on('connection', function (client) {
     var user
         ,   client_id = client.sessionId
     ;
-
-    if (!game_is_active) {
-        init();
-    }
 
     if (_.keys(players).length < 1) {
         betting.open();
@@ -270,7 +266,7 @@ app.get('/*.(js|css|png)', function (req, res) {
     res.sendfile('./' + req.url);
 }).get('/', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
-    res.end(Mustache.to_html(html_template, view));
+    res.end(noulette_html);
 });
 
 app.listen(8000);

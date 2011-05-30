@@ -9,14 +9,13 @@
     <h1>noulette</h1>
     <h2>Betting Status: <span id="betting_status"></span></h2>
     <div id='column_left' class='fl-left fifty'>
-        <div id='flash'></div>
         <ul id='players'></ul>
         <ul id='chips'>
             <li>Chip Stack</li>
             <li id='chip_count'></li>
         </ul>
         <ul id='results'>
-            <li>Results</li>
+            <li>Results <span><a id="clear_results" href="javascript:void(0);">clear</a></span></li>
         </ul>
     </div>
     <div id='column_right' class='fl-left fifty'>
@@ -113,7 +112,7 @@
         </div>
     </div>
     <script>
-    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js', 'http://cdn.socket.io/stable/socket.io.js', '/pub/js/mustache.js', '/pub/js/noulette_client.js');
+    head.js('https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js', 'http://cdn.socket.io/stable/socket.io.js', 'http://ajax.cdnjs.com/ajax/libs/mustache.js/0.3.0/mustache.min.js', '/pub/js/noulette_client.js');
     </script>
 </body>
 </html>
