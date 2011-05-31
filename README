@@ -5,9 +5,6 @@ To start the app, execute: node noulette.js
 
 Dependencies:
 
-- sys
-- fs
-- http
 - express
 - socket.io
 - mustache
