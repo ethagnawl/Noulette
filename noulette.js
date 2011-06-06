@@ -264,7 +264,8 @@ socket.on('connection', function (client) {
 
 app.get('/*.(js|css|png)', function (req, res) {
     res.sendfile('./' + req.url);
-}).get('/', function (req, res) {
+});
+app.get('/', function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/html'});
     res.end(noulette_html);
 });
