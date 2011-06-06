@@ -54,12 +54,13 @@ console.log('updated_chip_count: ' + updated_chip_count);
         port: config.port
     });
 
-    chips.user_name = get_user_name();
-
     function get_user_name() {
         new_user = prompt('hey there! what\'s your name?')
+		localStorage.setItem('user_name', new_user);
         return new_user;
-    }
+    }    
+    
+    chips.user_name = localStorage.getItem('user_name') || get_user_name();    
 
     function Bet(action, widget, key) {
         this.action = action;
