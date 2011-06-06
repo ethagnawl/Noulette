@@ -90,7 +90,9 @@ console.log('updated_chip_count: ' + updated_chip_count);
         config.els.$results.find('li').not(':first').remove();
     }
 
-    config.els.clear_results.onclick = clear_results();
+    config.els.clear_results.onclick = function () {
+    	clear_results();
+    };
 
     config.els.$layout.delegate('td', 'click', function () {
         if (config.betting_status) { // add .betting-open namespace and do away with this
